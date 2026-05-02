@@ -3246,145 +3246,181 @@
       );
     }
 
-    /* ── ONBOARDING (Phase 2) ────────────────────────────────────── */
-    const ONBOARD_GOALS = [
-      { id:'fat_loss',  emoji:'🔥', label:'Fat Loss',         desc:'Lose body fat, lean down', protocol:'code90' },
-      { id:'muscle',    emoji:'💪', label:'Muscle Building',  desc:'Strength + size',           protocol:'codePhysique' },
-      { id:'hair',      emoji:'🌿', label:'Hair Growth',      desc:'Stop loss, regrow',         protocol:'codeHair' },
-      { id:'glow',      emoji:'✨', label:'Skin Glow',         desc:'Clear, even, radiant',     protocol:'codeGlow' },
-      { id:'youth',     emoji:'🌱', label:'Anti-Aging',        desc:'Reverse biological age',   protocol:'codeYouth' },
-      { id:'wellness',  emoji:'⚖️', label:'Overall Wellness', desc:'Energy + balance',          protocol:'code90' },
+    /* ── ONBOARDING (10-step health audit) ─────────────────────── */
+    const OB_GOALS = [
+      { id:'fat_loss',  icon:'🔥', label:'Lose fat',              desc:'Cut body fat, stay muscular',        protocol:'code90'       },
+      { id:'muscle',    icon:'💪', label:'Build muscle',           desc:'Structured hypertrophy + recovery',   protocol:'codePhysique' },
+      { id:'hair',      icon:'🌿', label:'Regrow hair',            desc:'Block DHT, reduce scalp inflammation', protocol:'codeHair'     },
+      { id:'skin',      icon:'✨', label:'Clear skin',             desc:'Heal from within — gut + hormones',   protocol:'codeGlow'     },
+      { id:'energy',    icon:'⚡', label:'Fix my energy',          desc:'Eliminate fatigue, sleep better',     protocol:'code90'       },
+      { id:'transform', icon:'⚖️', label:'Full transformation',   desc:'Body + mind reset over 90 days',      protocol:'code90'       },
     ];
 
-    const ONBOARD_FITNESS = [
-      { id:'sedentary',  emoji:'🛋️', label:'Sedentary',           desc:'Desk-bound, <5k steps' },
-      { id:'light',      emoji:'🚶', label:'Lightly Active',      desc:'Some walking, 5–8k steps' },
-      { id:'moderate',   emoji:'🏃', label:'Moderately Active',   desc:'Workout 3–4×/week' },
-      { id:'very',       emoji:'⚡', label:'Very Active',          desc:'Daily training' },
+    const OB_BARRIERS = [
+      { id:'consistency', icon:'😩', label:"Couldn't stay consistent",    desc:'Life happens, routines break' },
+      { id:'no_plan',     icon:'📋', label:'Never had a clear plan',      desc:'Tried random things without structure' },
+      { id:'too_many',    icon:'💸', label:'Tried too many things',       desc:'Information overload — nothing stuck' },
+      { id:'life',        icon:'🏃', label:'Work / life always got in the way', desc:'Stress and schedule won every time' },
+      { id:'first',       icon:'🆕', label:'This is my first real attempt', desc:'Fresh start — no baggage'            },
     ];
 
-    const ONBOARD_DIETS = [
-      { id:'veg',     emoji:'🥗', label:'Vegetarian' },
-      { id:'nonveg',  emoji:'🍗', label:'Non-Vegetarian' },
-      { id:'vegan',   emoji:'🌱', label:'Vegan' },
-      { id:'egg',     emoji:'🥚', label:'Eggetarian' },
+    const OB_CONDITIONS = [
+      { id:'pcos',     icon:'🔴', label:'PCOS / PCOD',              desc:'Affects hormones, weight, skin'   },
+      { id:'thyroid',  icon:'🟠', label:'Thyroid issue',            desc:'Hypo or hyperthyroid'              },
+      { id:'diabetes', icon:'🟡', label:'Diabetes / Pre-diabetic',  desc:'Blood sugar management'            },
+      { id:'bp',       icon:'🟣', label:'High blood pressure',      desc:'Hypertension'                      },
+      { id:'stress',   icon:'🔵', label:'Chronic stress / Burnout', desc:'Ongoing mental or physical fatigue'},
+      { id:'none',     icon:'✅', label:'None of the above',         desc:'All clear'                         },
     ];
 
-    const ONBOARD_GYM = [
-      { id:'gym',     label:'Yes — full gym' },
-      { id:'home',    label:'Home setup' },
-      { id:'none',    label:'No equipment' },
+    const OB_DIETS = [
+      { id:'veg',    icon:'🥗', label:'Vegetarian'    },
+      { id:'nonveg', icon:'🍗', label:'Non-Vegetarian' },
+      { id:'vegan',  icon:'🌱', label:'Vegan'         },
+      { id:'egg',    icon:'🥚', label:'Eggetarian'    },
+    ];
+
+    const OB_EAT_PATTERNS = [
+      { id:'3meals', icon:'🍽️',  label:'Three meals a day',      desc:'Breakfast, lunch, dinner — fixed timing' },
+      { id:'IF',     icon:'⏱️',  label:'Intermittent fasting',   desc:'16:8 or similar eating window'           },
+      { id:'skip',   icon:'🚫',  label:'I often skip meals',     desc:'Irregular timing, not intentional'       },
+      { id:'graze',  icon:'🍎',  label:'Snack throughout the day', desc:'Small meals or bites, frequently'      },
+    ];
+
+    const OB_DIGESTION = [
+      { id:'bloating',    icon:'🫧', label:'Bloating'          },
+      { id:'acidity',     icon:'🔥', label:'Acidity / Reflux'  },
+      { id:'constipation',icon:'⚠️', label:'Constipation'      },
+      { id:'irregular',   icon:'📊', label:'Irregular hunger'  },
+      { id:'fine',        icon:'✅', label:'All good'           },
+    ];
+
+    const OB_FITNESS = [
+      { id:'sedentary', icon:'🛋️', label:'Sedentary',          desc:'Desk-bound, under 5,000 steps/day' },
+      { id:'light',     icon:'🚶', label:'Lightly active',     desc:'Some walking, 5–8k steps'          },
+      { id:'moderate',  icon:'🏃', label:'Moderately active',  desc:'Workout 3–4× per week'             },
+      { id:'very',      icon:'⚡', label:'Very active',        desc:'Daily intense training'             },
     ];
 
     function Onboarding({ onComplete }) {
+      const TOTAL = 10;
       const [step, setStep] = useState(0);
       const [data, setData] = useState({
-        name:'', age:'', height:'', weight:'', goalWeight:'',
-        goals:[],            // selected goal ids
-        fitness:'',          // fitness level id
-        diet:'',             // diet id
-        restrictions:'',     // free text
-        timePerDay:45,       // minutes
-        gymAccess:'',        // gym/home/none
+        name:'', sex:'',
+        goals:[], barrier:'',
+        age:'', height:'', weight:'', goalWeight:'',
+        conditions:[],
+        sleepHours:7, sleepQuality:'', stressLevel:5, fitness:'',
+        diet:'', eatPattern:'', digestion:[],
+        energyTime:'', stressResponse:'', bodyBuild:'',
+        timePerDay:45, gymAccess:'',
       });
+      const update = (k, v) => setData(d => ({ ...d, [k]:v }));
 
-      const TOTAL = 6;
-      const update = (k,v) => setData(d => ({ ...d, [k]:v }));
+      const prakriti = useMemo(() => {
+        const s = { vata:0, pitta:0, kapha:0 };
+        if (data.bodyBuild === 'lean')   s.vata  += 2;
+        if (data.bodyBuild === 'medium') s.pitta += 2;
+        if (data.bodyBuild === 'stocky') s.kapha += 2;
+        if (data.energyTime === 'evening' || data.energyTime === 'night') s.vata  += 1;
+        if (data.energyTime === 'afternoon') s.pitta += 1;
+        if (data.energyTime === 'morning')   s.kapha += 1;
+        if (data.stressResponse === 'overthink') s.vata  += 2;
+        if (data.stressResponse === 'irritable') s.pitta += 2;
+        if (data.stressResponse === 'withdraw')  s.kapha += 2;
+        if (data.digestion.includes('bloating'))     s.vata  += 1;
+        if (data.digestion.includes('acidity'))      s.pitta += 1;
+        if (data.digestion.includes('constipation')) s.kapha += 1;
+        const max = Math.max(s.vata, s.pitta, s.kapha);
+        if (!max) return 'pitta';
+        return ['vata','pitta','kapha'].find(k => s[k] === max) || 'pitta';
+      }, [data.bodyBuild, data.energyTime, data.stressResponse, data.digestion]);
+
+      const protocolId = useMemo(() => {
+        const map = { fat_loss:'code90', muscle:'codePhysique', hair:'codeHair', skin:'codeGlow', energy:'code90', transform:'code90' };
+        return map[data.goals[0]] || 'code90';
+      }, [data.goals]);
 
       const canContinue = () => {
         if (step === 0) return true;
-        if (step === 1) return data.goals.length > 0;
-        if (step === 2) return data.name.trim() && data.age && data.height && data.weight;
-        if (step === 3) return !!data.fitness;
-        if (step === 4) return !!data.diet && !!data.gymAccess;
-        if (step === 5) return true;
+        if (step === 1) return data.name.trim().length >= 2 && !!data.sex;
+        if (step === 2) return data.goals.length > 0;
+        if (step === 3) return !!data.barrier;
+        if (step === 4) return !!(data.age && data.height && data.weight);
+        if (step === 5) return data.conditions.length > 0;
+        if (step === 6) return !!(data.sleepQuality && data.fitness);
+        if (step === 7) return !!(data.diet && data.eatPattern && data.digestion.length > 0);
+        if (step === 8) return !!(data.energyTime && data.stressResponse && data.bodyBuild);
+        if (step === 9) return true;
         return false;
       };
 
-      const next = () => {
-        if (!canContinue()) return;
-        if (step === TOTAL - 1) finish();
-        else setStep(s => s + 1);
-      };
-
+      const next = () => { if (!canContinue()) return; if (step === TOTAL - 1) finish(); else setStep(s => s + 1); };
       const back = () => setStep(s => Math.max(0, s - 1));
-
-      const recommendedProtocolId = useMemo(() => {
-        const first = data.goals[0];
-        const found = ONBOARD_GOALS.find(g => g.id === first);
-        return found ? found.protocol : 'code90';
-      }, [data.goals]);
 
       const finish = () => {
         const profile = {
-          name:        data.name.trim(),
-          age:         Number(data.age) || 0,
-          height:      Number(data.height) || 0,
-          weight:      Number(data.weight) || 0,
-          goalWeight:  Number(data.goalWeight) || Number(data.weight) || 0,
-          activityLevel: data.fitness,
-          diet:        data.diet,
-          goal:        data.goals[0] || 'wellness',
-          goals:       data.goals,
-          restrictions: data.restrictions.trim(),
-          timePerDay:  data.timePerDay,
-          gymAccess:   data.gymAccess,
+          name: data.name.trim(), sex: data.sex,
+          age: Number(data.age)||0, height: Number(data.height)||0,
+          weight: Number(data.weight)||0, goalWeight: Number(data.goalWeight)||Number(data.weight)||0,
+          activityLevel: data.fitness, diet: data.diet, eatPattern: data.eatPattern,
+          goal: data.goals[0]||'transform', goals: data.goals, barrier: data.barrier,
+          conditions: data.conditions, sleepHours: data.sleepHours, sleepQuality: data.sleepQuality,
+          stressLevel: data.stressLevel, digestion: data.digestion,
+          prakriti, energyTime: data.energyTime, stressResponse: data.stressResponse,
+          bodyBuild: data.bodyBuild, timePerDay: data.timePerDay, gymAccess: data.gymAccess,
         };
         S.set('profile', profile);
-        S.set('protocol_active', recommendedProtocolId);
+        S.set('protocol_active', protocolId);
         S.set('onboarded', true);
         S.set('startDay', new Date().toISOString());
-        // initial weight history seed
         if (profile.weight) {
-          S.set('weight', { current: profile.weight, target: profile.goalWeight, start: profile.weight, history:[{ d:new Date().toISOString().slice(0,10), w:profile.weight }] });
+          S.set('weight', { current:profile.weight, target:profile.goalWeight, start:profile.weight, history:[{ d:new Date().toISOString().slice(0,10), w:profile.weight }] });
         }
         onComplete && onComplete();
       };
 
+      const stepNames = ['','About you','Your goal','What stopped you','Your body','Health check','Lifestyle','Food & gut','Your nature','Your protocol'];
       const bg = 'radial-gradient(ellipse 80% 60% at 10% 0%,var(--glow-a),transparent 60%), radial-gradient(ellipse 60% 60% at 90% 110%,var(--glow-b),transparent 60%), var(--bg)';
+      const ok = canContinue();
+      const firstName = data.name.split(' ')[0];
 
       return (
         <div style={{ width:'100%', height:'100dvh', display:'flex', flexDirection:'column', background:bg, color:'var(--text)' }}>
-          {/* Top: progress + back */}
           <div className="safe-t" style={{ padding:'16px 20px 8px', display:'flex', alignItems:'center', gap:12 }}>
-            {step > 0 ? (
-              <button onClick={back} style={{ background:'transparent', border:'none', color:'var(--text-dim)', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}>
-                <Icon name="ChevronLeft" size={22}/>
-              </button>
-            ) : <div style={{ width:22 }}/>}
-            <div style={{ flex:1, height:3, borderRadius:999, background:'var(--border-soft)', overflow:'hidden' }}>
-              <div style={{ height:'100%', borderRadius:999, background:'linear-gradient(90deg, var(--gold), var(--gold-deep))', width:`${((step+1)/TOTAL)*100}%`, transition:'width .35s cubic-bezier(.16,1,.3,1)' }}/>
+            {step > 0
+              ? <button onClick={back} style={{ background:'none', border:'none', color:'var(--text-dim)', cursor:'pointer', display:'flex', padding:0 }}><Icon name="ChevronLeft" size={22}/></button>
+              : <div style={{ width:22 }}/>}
+            <div style={{ flex:1 }}>
+              <div style={{ height:3, borderRadius:999, background:'var(--border-soft)', overflow:'hidden' }}>
+                <div style={{ height:'100%', borderRadius:999, background:'linear-gradient(90deg,var(--gold),var(--gold-deep))', width:`${((step+1)/TOTAL)*100}%`, transition:'width .35s cubic-bezier(.16,1,.3,1)' }}/>
+              </div>
+              {step > 0 && <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:5, fontWeight:500 }} className="mono">{step}/{TOTAL-1} — {stepNames[step]}</div>}
             </div>
             <div style={{ fontSize:11, color:'var(--text-faint)', minWidth:28, textAlign:'right' }} className="mono">{step+1}/{TOTAL}</div>
           </div>
 
-          {/* Body — scrollable */}
           <div key={step} className="scroll-y no-bar fade-up" style={{ flex:1, padding:'20px 20px 24px' }}>
             {step === 0 && <OBWelcome/>}
-            {step === 1 && <OBGoals data={data} update={update}/>}
-            {step === 2 && <OBDetails data={data} update={update}/>}
-            {step === 3 && <OBFitness data={data} update={update}/>}
-            {step === 4 && <OBDiet data={data} update={update}/>}
-            {step === 5 && <OBRecommendation data={data} protocolId={recommendedProtocolId}/>}
+            {step === 1 && <OBName data={data} update={update}/>}
+            {step === 2 && <OBGoal data={data} update={update}/>}
+            {step === 3 && <OBBarrier data={data} update={update}/>}
+            {step === 4 && <OBBody data={data} update={update}/>}
+            {step === 5 && <OBHealth data={data} update={update}/>}
+            {step === 6 && <OBLifestyle data={data} update={update}/>}
+            {step === 7 && <OBFood data={data} update={update}/>}
+            {step === 8 && <OBNature data={data} update={update}/>}
+            {step === 9 && <OBReveal data={data} protocolId={protocolId} prakriti={prakriti}/>}
           </div>
 
-          {/* Bottom CTA */}
           <div className="safe-b" style={{ padding:'12px 20px 16px' }}>
-            <button
-              onClick={next}
-              disabled={!canContinue()}
-              style={{
-                width:'100%', padding:'16px',
-                borderRadius:14, border:'none', cursor: canContinue()?'pointer':'not-allowed',
-                background: canContinue() ? 'linear-gradient(135deg, var(--gold), var(--gold-deep))' : 'var(--bg-card)',
-                color: canContinue() ? '#1a0f00' : 'var(--text-faint)',
-                fontWeight:600, fontSize:15,
+            <button onClick={next} disabled={!ok}
+              style={{ width:'100%', padding:'16px', borderRadius:14, border:'none', cursor: ok?'pointer':'not-allowed',
+                background: ok ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
+                color: ok ? '#1a0f00' : 'var(--text-faint)', fontWeight:700, fontSize:15,
                 fontFamily:'Plus Jakarta Sans,sans-serif',
-                boxShadow: canContinue() ? '0 8px 24px rgba(232,201,122,.18)' : 'none',
-                transition:'all .2s ease',
-              }}
-            >
-              {step === 0 ? 'Begin Setup' : step === TOTAL-1 ? 'Start Your Journey →' : 'Continue'}
+                boxShadow: ok ? '0 8px 24px rgba(232,201,122,.2)' : 'none', transition:'all .2s' }}>
+              {step === 0 ? 'Begin health audit →' : step === TOTAL-1 ? `Start Day 1${firstName ? ', '+firstName : ''} →` : 'Continue'}
             </button>
           </div>
         </div>
@@ -3393,59 +3429,97 @@
 
     function OBWelcome() {
       return (
-        <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', minHeight:'70vh', textAlign:'center', padding:'0 8px' }}>
-          <div className="breathe" style={{ width:96, height:96, borderRadius:'50%', background:'linear-gradient(135deg, var(--gold), var(--gold-deep))', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24, boxShadow:'0 16px 48px rgba(232,201,122,.25)' }}>
-            <span style={{ fontSize:44 }}>🪷</span>
+        <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', minHeight:'72vh', textAlign:'center', padding:'0 8px' }}>
+          <div className="breathe" style={{ width:88, height:88, borderRadius:'50%', background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24, boxShadow:'0 16px 48px rgba(232,201,122,.28)' }}>
+            <span style={{ fontSize:42 }}>🪷</span>
           </div>
-          <div className="serif" style={{ fontSize:48, lineHeight:1, marginBottom:12, letterSpacing:'-1px' }}>Welcome to SVVA</div>
-          <div style={{ fontSize:17, color:'var(--text-dim)', maxWidth:320, lineHeight:1.5, marginBottom:8 }}>
-            Your Vedic Health System
-          </div>
-          <div style={{ fontSize:13, color:'var(--text-faint)', maxWidth:300, lineHeight:1.6, marginTop:24 }}>
-            A 90-second setup to personalise your protocol — diet, herbs, asanas, training. Designed for the long path.
+          <div className="serif" style={{ fontSize:44, lineHeight:1, marginBottom:8, letterSpacing:'-1px' }}>SVVA</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', letterSpacing:'0.1em', textTransform:'uppercase', fontWeight:600, marginBottom:28 }}>Ancient wisdom. Precision science.</div>
+          <div style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:18, padding:'18px 20px', maxWidth:340, textAlign:'left' }}>
+            <div style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.7, marginBottom:14 }}>
+              A 2-minute health audit that builds a personal 90-day protocol — diet, herbs, asanas, and training — all aligned to your Ayurvedic constitution.
+            </div>
+            {[['🔒','Stays on your device — 100% private'],['🌿','Vedic system + modern science'],['📐','Built around your body and lifestyle']].map(([e,t]) => (
+              <div key={t} style={{ display:'flex', alignItems:'center', gap:10, fontSize:12, color:'var(--text-faint)', padding:'5px 0', borderTop:'0.5px solid var(--border-soft)' }}>
+                <span style={{ flexShrink:0 }}>{e}</span><span>{t}</span>
+              </div>
+            ))}
           </div>
         </div>
       );
     }
 
-    function OBGoals({ data, update }) {
-      const toggle = (id) => {
-        const cur = data.goals.includes(id);
-        const next = cur ? data.goals.filter(g => g !== id) : [...data.goals, id];
-        update('goals', next);
-      };
+    function OBName({ data, update }) {
+      const firstName = data.name.split(' ')[0];
       return (
         <div>
-          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>What brings you here?</div>
-          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>Pick one or more. The first you select becomes your primary protocol.</div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 1 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>What should we call you?</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>We'll use your name throughout your protocol to keep it personal.</div>
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.14em', color:'var(--text-faint)', marginBottom:8, fontWeight:500 }}>Your name</div>
+            <input type="text" value={data.name} onChange={e => update('name', e.target.value)} placeholder="Enter your name" autoFocus
+              style={{ width:'100%', background:'var(--bg-card)', border:'0.5px solid var(--border)', borderRadius:12, padding:'15px 16px', fontSize:17, color:'var(--text)', fontFamily:'Plus Jakarta Sans,sans-serif', outline:'none' }}
+              onFocus={e => e.target.style.borderColor='var(--gold)'}
+              onBlur={e => e.target.style.borderColor='var(--border)'}/>
+            {firstName.length >= 2 && (
+              <div style={{ fontSize:13, color:'var(--gold)', marginTop:8, fontWeight:500 }}>Nice to meet you, {firstName}. Let's build your protocol.</div>
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.14em', color:'var(--text-faint)', marginBottom:10, fontWeight:500 }}>Biological sex</div>
+            <div style={{ display:'flex', gap:10 }}>
+              {[['male','♂','Male'],['female','♀','Female'],['other','⚧','Other']].map(([id, sym, label]) => {
+                const sel = data.sex === id;
+                return (
+                  <button key={id} onClick={() => update('sex', id)}
+                    style={{ flex:1, padding:'14px 8px', borderRadius:12, cursor:'pointer', textAlign:'center',
+                      border: sel ? '0.5px solid rgba(232,201,122,.6)' : '0.5px solid var(--border-soft)',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      color: sel ? 'var(--gold)' : 'var(--text-dim)', fontWeight: sel ? 600 : 400 }}>
+                    <div style={{ fontSize:18, marginBottom:4 }}>{sym}</div>
+                    <div style={{ fontSize:12 }}>{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:6, lineHeight:1.5 }}>Used only for BMR calculation and hormonal health considerations.</div>
+          </div>
+        </div>
+      );
+    }
+
+    function OBGoal({ data, update }) {
+      const toggle = id => {
+        const cur = data.goals.includes(id);
+        update('goals', cur ? data.goals.filter(g => g !== id) : [...data.goals, id]);
+      };
+      const firstName = data.name.split(' ')[0];
+      return (
+        <div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 2 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>{firstName ? `What do you want, ${firstName}?` : 'What do you want?'}</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>Pick your main goal first — that becomes your protocol. Add more if they apply.</div>
           <div style={{ display:'grid', gap:10 }}>
-            {ONBOARD_GOALS.map(g => {
-              const selected = data.goals.includes(g.id);
+            {OB_GOALS.map(g => {
+              const sel = data.goals.includes(g.id);
               const isPrimary = data.goals[0] === g.id;
               return (
                 <div key={g.id} onClick={() => toggle(g.id)}
-                  style={{
-                    display:'flex', alignItems:'center', gap:14,
-                    padding:'14px 16px', borderRadius:16,
-                    background: selected ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
-                    border: selected ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
-                    cursor:'pointer', transition:'all .15s',
-                  }}>
-                  <div style={{ fontSize:24, width:40, height:40, borderRadius:12, background:'var(--bg-card-2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{g.emoji}</div>
+                  style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', borderRadius:16, cursor:'pointer', transition:'all .15s',
+                    background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                    border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                  <div style={{ fontSize:24, width:44, height:44, borderRadius:12, background:'var(--bg-card-2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{g.icon}</div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:15, fontWeight:600, color:'var(--text)', display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ fontSize:15, fontWeight:600, display:'flex', alignItems:'center', gap:8 }}>
                       {g.label}
                       {isPrimary && <span style={{ fontSize:9, padding:'2px 7px', borderRadius:999, background:'var(--gold)', color:'#1a0f00', fontWeight:700, letterSpacing:'.5px' }}>PRIMARY</span>}
                     </div>
                     <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{g.desc}</div>
                   </div>
-                  <div style={{
-                    width:22, height:22, borderRadius:'50%',
-                    border: selected ? '2px solid var(--gold)' : '1.5px solid var(--border)',
-                    background: selected ? 'var(--gold)' : 'transparent',
-                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
-                  }}>
-                    {selected && <Icon name="Check" size={13} strokeWidth={3} style={{ color:'#1a0f00' }}/>}
+                  <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
+                    border: sel ? '2px solid var(--gold)' : '1.5px solid var(--border)', background: sel ? 'var(--gold)' : 'transparent' }}>
+                    {sel && <Icon name="Check" size={13} strokeWidth={3} style={{ color:'#1a0f00' }}/>}
                   </div>
                 </div>
               );
@@ -3455,92 +3529,135 @@
       );
     }
 
-    function OBField({ label, hint, children }) {
-      return (
-        <div style={{ marginBottom:14 }}>
-          <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.15em', color:'var(--text-faint)', marginBottom:6, fontWeight:500 }}>{label}</div>
-          {children}
-          {hint && <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>{hint}</div>}
-        </div>
-      );
-    }
-
-    function OBInput({ value, onChange, type='text', placeholder, suffix }) {
-      return (
-        <div style={{ position:'relative' }}>
-          <input
-            type={type}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={placeholder}
-            inputMode={type==='number' ? 'decimal' : 'text'}
-            style={{
-              width:'100%',
-              background:'var(--bg-card)',
-              border:'0.5px solid var(--border)',
-              borderRadius:12,
-              padding: suffix ? '13px 48px 13px 14px' : '13px 14px',
-              fontSize:15, color:'var(--text)',
-              fontFamily:'Plus Jakarta Sans,sans-serif',
-              outline:'none',
-            }}
-            onFocus={e => e.target.style.borderColor='var(--gold)'}
-            onBlur={e => e.target.style.borderColor='var(--border)'}
-          />
-          {suffix && <div style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', fontSize:13, color:'var(--text-faint)', pointerEvents:'none' }} className="mono">{suffix}</div>}
-        </div>
-      );
-    }
-
-    function OBDetails({ data, update }) {
+    function OBBarrier({ data, update }) {
+      const firstName = data.name.split(' ')[0];
       return (
         <div>
-          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Tell us about you</div>
-          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>This personalises your daily targets.</div>
-          <OBField label="Your name">
-            <OBInput value={data.name} onChange={v => update('name', v)} placeholder="Vignesh"/>
-          </OBField>
-          <OBField label="Age">
-            <OBInput value={data.age} onChange={v => update('age', v.replace(/\D/g,''))} type="number" placeholder="28" suffix="yrs"/>
-          </OBField>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-            <OBField label="Height">
-              <OBInput value={data.height} onChange={v => update('height', v.replace(/[^0-9.]/g,''))} type="number" placeholder="175" suffix="cm"/>
-            </OBField>
-            <OBField label="Weight">
-              <OBInput value={data.weight} onChange={v => update('weight', v.replace(/[^0-9.]/g,''))} type="number" placeholder="74" suffix="kg"/>
-            </OBField>
-          </div>
-          <OBField label="Target weight" hint="Where you want to be in 90 days">
-            <OBInput value={data.goalWeight} onChange={v => update('goalWeight', v.replace(/[^0-9.]/g,''))} type="number" placeholder="68" suffix="kg"/>
-          </OBField>
-        </div>
-      );
-    }
-
-    function OBFitness({ data, update }) {
-      return (
-        <div>
-          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Your current fitness</div>
-          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>Be honest — your protocol adapts to where you are now.</div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 3 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>Be honest with us</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>Most people try 3+ health approaches before one sticks. What's stopped you before{firstName ? `, ${firstName}` : ''}?</div>
           <div style={{ display:'grid', gap:10 }}>
-            {ONBOARD_FITNESS.map(f => {
-              const selected = data.fitness === f.id;
+            {OB_BARRIERS.map(b => {
+              const sel = data.barrier === b.id;
               return (
-                <div key={f.id} onClick={() => update('fitness', f.id)}
-                  style={{
-                    display:'flex', alignItems:'center', gap:14,
-                    padding:'16px', borderRadius:16,
-                    background: selected ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
-                    border: selected ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
-                    cursor:'pointer', transition:'all .15s',
-                  }}>
-                  <div style={{ fontSize:26 }}>{f.emoji}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:15, fontWeight:600, color:'var(--text)' }}>{f.label}</div>
-                    <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{f.desc}</div>
+                <div key={b.id} onClick={() => update('barrier', b.id)}
+                  style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', borderRadius:16, cursor:'pointer', transition:'all .15s',
+                    background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                    border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                  <div style={{ fontSize:24, flexShrink:0, width:36, textAlign:'center' }}>{b.icon}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:14, fontWeight:600 }}>{b.label}</div>
+                    <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{b.desc}</div>
                   </div>
-                  {selected && <Icon name="Check" size={18} strokeWidth={2.5} style={{ color:'var(--gold)' }}/>}
+                  {sel && <Icon name="Check" size={18} strokeWidth={2.5} style={{ color:'var(--gold)', flexShrink:0 }}/>}
+                </div>
+              );
+            })}
+          </div>
+          {data.barrier && (
+            <div style={{ marginTop:16, padding:'12px 14px', borderRadius:12, background:'rgba(232,201,122,.08)', border:'0.5px solid rgba(232,201,122,.25)', fontSize:12, color:'var(--text-dim)', lineHeight:1.6 }}>
+              {data.barrier === 'consistency' && '✓ We\'ll build micro-habits and a daily streak to keep you in the game.'}
+              {data.barrier === 'no_plan'     && '✓ Your 90-day protocol lays out every meal, herb, asana, and workout — day by day.'}
+              {data.barrier === 'too_many'    && '✓ One protocol. One direction. No switching — just 90 days of one focused system.'}
+              {data.barrier === 'life'        && '✓ Protocols are built around 20–45 minute days. Life can\'t win if the bar is low enough.'}
+              {data.barrier === 'first'       && '✓ Perfect. We\'ll guide you from zero — no prior knowledge needed at all.'}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function OBBody({ data, update }) {
+      const bmi = useMemo(() => {
+        const h = (Number(data.height)||0) / 100, w = Number(data.weight)||0;
+        if (!h || !w) return null;
+        return (w/(h*h)).toFixed(1);
+      }, [data.height, data.weight]);
+      const weeks = useMemo(() => {
+        const w = Number(data.weight)||0, gw = Number(data.goalWeight)||0;
+        if (!w || !gw || w === gw) return null;
+        return Math.round(Math.abs(w - gw) / 0.5);
+      }, [data.weight, data.goalWeight]);
+      const NumInput = ({ label, value, onChange, placeholder, suffix, note }) => (
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.14em', color:'var(--text-faint)', marginBottom:6, fontWeight:500 }}>{label}</div>
+          <div style={{ position:'relative' }}>
+            <input type="number" inputMode="decimal" value={value} onChange={e => onChange(e.target.value.replace(/[^0-9.]/g,''))} placeholder={placeholder}
+              style={{ width:'100%', background:'var(--bg-card)', border:'0.5px solid var(--border)', borderRadius:12, padding: suffix?'13px 50px 13px 14px':'13px 14px', fontSize:15, color:'var(--text)', fontFamily:'Geist Mono,monospace', outline:'none' }}
+              onFocus={e => e.target.style.borderColor='var(--gold)'}
+              onBlur={e => e.target.style.borderColor='var(--border)'}/>
+            {suffix && <span style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', fontSize:12, color:'var(--text-faint)', pointerEvents:'none' }}>{suffix}</span>}
+          </div>
+          {note && <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>{note}</div>}
+        </div>
+      );
+      return (
+        <div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 4 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>Your body, right now</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>Used to set calorie targets, safe rate of change, and your 90-day timeline. Not shared anywhere.</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <NumInput label="Height" value={data.height} onChange={v => update('height', v)} placeholder="175" suffix="cm"/>
+            <NumInput label="Age" value={data.age} onChange={v => update('age', v.replace(/\D/g,''))} placeholder="27" suffix="yrs"/>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <NumInput label="Current weight" value={data.weight} onChange={v => update('weight', v)} placeholder="76" suffix="kg"/>
+            <NumInput label="Target weight" value={data.goalWeight} onChange={v => update('goalWeight', v)} placeholder="68" suffix="kg" note="Where you want to be"/>
+          </div>
+          {(bmi || weeks) && (
+            <div style={{ display:'flex', gap:10, marginTop:4 }}>
+              {bmi && (() => {
+                const [label, color] = bmi < 18.5 ? ['Underweight','var(--blue)'] : bmi < 25 ? ['Normal','var(--green)'] : bmi < 30 ? ['Overweight','var(--orange)'] : ['Obese','var(--red)'];
+                return (
+                  <div style={{ flex:1, padding:14, borderRadius:14, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', textAlign:'center' }}>
+                    <div style={{ fontFamily:'Geist Mono,monospace', fontSize:28, color, lineHeight:1 }}>{bmi}</div>
+                    <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>BMI · {label}</div>
+                  </div>
+                );
+              })()}
+              {weeks && (
+                <div style={{ flex:1, padding:14, borderRadius:14, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', textAlign:'center' }}>
+                  <div style={{ fontFamily:'Geist Mono,monospace', fontSize:28, color:'var(--gold)', lineHeight:1 }}>~{weeks}w</div>
+                  <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>to goal (safe pace)</div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function OBHealth({ data, update }) {
+      const toggle = id => {
+        if (id === 'none') { update('conditions', ['none']); return; }
+        const filtered = data.conditions.filter(c => c !== 'none');
+        update('conditions', filtered.includes(id) ? filtered.filter(c => c !== id) : [...filtered, id]);
+      };
+      return (
+        <div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 5 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>Health check</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:8, lineHeight:1.5 }}>Do any of these apply to you?</div>
+          <div style={{ fontSize:12, color:'var(--text-faint)', marginBottom:20, padding:'10px 12px', borderRadius:10, background:'var(--bg-card-2)', border:'0.5px solid var(--border-soft)', lineHeight:1.5 }}>
+            🔒 This never leaves your device. It adjusts which herbs, foods, and asanas appear in your protocol.
+          </div>
+          <div style={{ display:'grid', gap:10 }}>
+            {OB_CONDITIONS.map(c => {
+              const sel = data.conditions.includes(c.id);
+              return (
+                <div key={c.id} onClick={() => toggle(c.id)}
+                  style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 16px', borderRadius:16, cursor:'pointer', transition:'all .15s',
+                    background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                    border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                  <div style={{ fontSize:18, flexShrink:0, width:28, textAlign:'center' }}>{c.icon}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:14, fontWeight:600 }}>{c.label}</div>
+                    <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{c.desc}</div>
+                  </div>
+                  <div style={{ width:22, height:22, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
+                    border: sel ? '2px solid var(--gold)' : '1.5px solid var(--border)', background: sel ? 'var(--gold)' : 'transparent' }}>
+                    {sel && <Icon name="Check" size={13} strokeWidth={3} style={{ color:'#1a0f00' }}/>}
+                  </div>
                 </div>
               );
             })}
@@ -3549,124 +3666,294 @@
       );
     }
 
-    function OBDiet({ data, update }) {
+    function OBLifestyle({ data, update }) {
+      const sleepE = h => h <= 5 ? '😴' : h <= 7 ? '🌙' : '✨';
+      const stressE = s => s <= 3 ? '😌' : s <= 6 ? '😐' : s <= 8 ? '😰' : '🔥';
       return (
         <div>
-          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Diet & schedule</div>
-          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>So we can plan meals you'll actually eat.</div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 6 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>How's life going?</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>Sleep and stress are the foundation. These directly power the Soma Engine — SVVA's daily recovery score.</div>
+          <div style={{ marginBottom:22 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+              <div style={{ fontSize:13, fontWeight:500 }}>Sleep per night {sleepE(data.sleepHours)}</div>
+              <div style={{ fontFamily:'Geist Mono,monospace', fontSize:20, color:'var(--gold)' }}>{data.sleepHours}h</div>
+            </div>
+            <input type="range" min={4} max={10} step={0.5} value={data.sleepHours} onChange={e => update('sleepHours', Number(e.target.value))} className="eg" style={{ width:'100%' }}/>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:4 }} className="mono"><span>4h</span><span>10h</span></div>
+          </div>
+          <div style={{ marginBottom:22 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Do you wake up feeling rested?</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+              {[['rested','Usually','😊'],['sometimes','Sometimes','😶'],['rarely','Rarely','😔']].map(([id, label, e]) => {
+                const sel = data.sleepQuality === id;
+                return (
+                  <button key={id} onClick={() => update('sleepQuality', id)}
+                    style={{ padding:'13px 8px', borderRadius:12, textAlign:'center', cursor:'pointer',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      color: sel ? 'var(--gold)' : 'var(--text-dim)', fontWeight: sel ? 600 : 400 }}>
+                    <div style={{ fontSize:20, marginBottom:4 }}>{e}</div>
+                    <div style={{ fontSize:12 }}>{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div style={{ marginBottom:22 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+              <div style={{ fontSize:13, fontWeight:500 }}>Daily stress level {stressE(data.stressLevel)}</div>
+              <div style={{ fontFamily:'Geist Mono,monospace', fontSize:20, color: data.stressLevel >= 7 ? 'var(--orange)' : 'var(--gold)' }}>{data.stressLevel}/10</div>
+            </div>
+            <input type="range" min={1} max={10} step={1} value={data.stressLevel} onChange={e => update('stressLevel', Number(e.target.value))} className="eg" style={{ width:'100%' }}/>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:4 }} className="mono"><span>Zen 😌</span><span>Burning 🔥</span></div>
+          </div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Current activity level</div>
+            <div style={{ display:'grid', gap:8 }}>
+              {OB_FITNESS.map(f => {
+                const sel = data.fitness === f.id;
+                return (
+                  <div key={f.id} onClick={() => update('fitness', f.id)}
+                    style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderRadius:14, cursor:'pointer', transition:'all .15s',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                    <span style={{ fontSize:20 }}>{f.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight: sel?600:500 }}>{f.label}</div>
+                      <div style={{ fontSize:11, color:'var(--text-dim)', marginTop:1 }}>{f.desc}</div>
+                    </div>
+                    {sel && <Icon name="Check" size={16} strokeWidth={2.5} style={{ color:'var(--gold)', flexShrink:0 }}/>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
-          <OBField label="Dietary preference">
+    function OBFood({ data, update }) {
+      const toggleDig = id => {
+        if (id === 'fine') { update('digestion', ['fine']); return; }
+        const filtered = data.digestion.filter(d => d !== 'fine');
+        update('digestion', filtered.includes(id) ? filtered.filter(d => d !== id) : [...filtered, id]);
+      };
+      return (
+        <div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 7 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>How you eat</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24, lineHeight:1.5 }}>In Ayurveda, digestion is everything — Agni. Your meals and gut health reveal your constitution.</div>
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Diet preference</div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-              {ONBOARD_DIETS.map(d => {
+              {OB_DIETS.map(d => {
                 const sel = data.diet === d.id;
                 return (
-                  <div key={d.id} onClick={() => update('diet', d.id)}
-                    style={{
-                      display:'flex', alignItems:'center', gap:8,
-                      padding:'12px 14px', borderRadius:12,
+                  <button key={d.id} onClick={() => update('diet', d.id)}
+                    style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 14px', borderRadius:12, cursor:'pointer',
                       background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
                       border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
-                      cursor:'pointer', fontSize:14, fontWeight:500,
-                    }}>
-                    <span style={{ fontSize:18 }}>{d.emoji}</span>
-                    <span style={{ color:'var(--text)' }}>{d.label}</span>
-                  </div>
+                      color: sel ? 'var(--gold)' : 'var(--text)' }}>
+                    <span style={{ fontSize:20 }}>{d.icon}</span>
+                    <span style={{ fontSize:13, fontWeight: sel?600:500 }}>{d.label}</span>
+                  </button>
                 );
               })}
             </div>
-          </OBField>
-
-          <OBField label="Health conditions / allergies" hint="Optional — anything we should know">
-            <textarea
-              value={data.restrictions}
-              onChange={e => update('restrictions', e.target.value)}
-              placeholder="e.g. lactose intolerant, gluten allergy, hypertension"
-              rows={2}
-              style={{
-                width:'100%',
-                background:'var(--bg-card)',
-                border:'0.5px solid var(--border)',
-                borderRadius:12,
-                padding:'12px 14px',
-                fontSize:14, color:'var(--text)',
-                fontFamily:'Plus Jakarta Sans,sans-serif',
-                outline:'none', resize:'none',
-              }}
-            />
-          </OBField>
-
-          <OBField label={`Time available per day · ${data.timePerDay} min`}>
-            <input
-              type="range" min={15} max={120} step={5}
-              value={data.timePerDay}
-              onChange={e => update('timePerDay', Number(e.target.value))}
-              className="eg"
-              style={{ marginTop:6 }}
-            />
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:4 }} className="mono">
-              <span>15min</span><span>2hr</span>
-            </div>
-          </OBField>
-
-          <OBField label="Gym access">
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
-              {ONBOARD_GYM.map(g => {
-                const sel = data.gymAccess === g.id;
+          </div>
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>How do you currently eat?</div>
+            <div style={{ display:'grid', gap:8 }}>
+              {OB_EAT_PATTERNS.map(p => {
+                const sel = data.eatPattern === p.id;
                 return (
-                  <div key={g.id} onClick={() => update('gymAccess', g.id)}
-                    style={{
-                      padding:'10px 8px', borderRadius:10, textAlign:'center',
+                  <div key={p.id} onClick={() => update('eatPattern', p.id)}
+                    style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderRadius:14, cursor:'pointer', transition:'all .15s',
                       background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
-                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
-                      cursor:'pointer', fontSize:12, fontWeight:500, color: sel ? 'var(--gold)' : 'var(--text)',
-                    }}>
-                    {g.label}
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                    <span style={{ fontSize:18, flexShrink:0 }}>{p.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight: sel?600:500 }}>{p.label}</div>
+                      <div style={{ fontSize:11, color:'var(--text-dim)', marginTop:1 }}>{p.desc}</div>
+                    </div>
+                    {sel && <Icon name="Check" size={16} strokeWidth={2.5} style={{ color:'var(--gold)', flexShrink:0 }}/>}
                   </div>
                 );
               })}
             </div>
-          </OBField>
+          </div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Any digestive issues? (multi-select)</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              {OB_DIGESTION.map(d => {
+                const sel = data.digestion.includes(d.id);
+                return (
+                  <button key={d.id} onClick={() => toggleDig(d.id)}
+                    style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 13px', borderRadius:12, cursor:'pointer',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      color: sel ? 'var(--gold)' : 'var(--text-dim)' }}>
+                    <span style={{ fontSize:16 }}>{d.icon}</span>
+                    <span style={{ fontSize:12, fontWeight: sel?600:500 }}>{d.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       );
     }
 
-    function OBRecommendation({ data, protocolId }) {
-      const proto = PROTOCOLS[protocolId] || PROTOCOLS.code90;
+    function OBNature({ data, update }) {
       return (
         <div>
-          <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.18em', color:'var(--gold)', marginBottom:8, fontWeight:600 }}>Your recommendation</div>
-          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Your protocol is ready</div>
-          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:20 }}>Based on your goals and current fitness, this is your starting point.</div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Step 8 of 9</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:8 }}>Your nature</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:8, lineHeight:1.5 }}>Three questions to determine your Ayurvedic constitution (Prakriti). This shapes which herbs, asanas, and meal timings are right for you.</div>
+          <div style={{ fontSize:12, color:'var(--text-faint)', marginBottom:20, padding:'10px 12px', borderRadius:10, background:'var(--bg-card-2)', border:'0.5px solid var(--border-soft)' }}>
+            🌿 No right or wrong answers — just be honest with yourself.
+          </div>
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>When do you naturally feel most energized?</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              {[['morning','🌅','Early morning'],['afternoon','☀️','Afternoon'],['evening','🌆','Evening'],['night','🌙','Late night']].map(([id, e, label]) => {
+                const sel = data.energyTime === id;
+                return (
+                  <button key={id} onClick={() => update('energyTime', id)}
+                    style={{ padding:'14px 10px', borderRadius:12, textAlign:'center', cursor:'pointer',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      color: sel ? 'var(--gold)' : 'var(--text-dim)' }}>
+                    <div style={{ fontSize:22, marginBottom:6 }}>{e}</div>
+                    <div style={{ fontSize:12, fontWeight: sel?600:500 }}>{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Under stress, you tend to…</div>
+            <div style={{ display:'grid', gap:8 }}>
+              {[['overthink','🌀','Overthink — spiral into anxiety','Vata response'],
+                ['irritable','🔥','Get frustrated or irritable quickly','Pitta response'],
+                ['withdraw', '🐢','Go quiet and withdraw from the problem','Kapha response']].map(([id, e, label, sub]) => {
+                const sel = data.stressResponse === id;
+                return (
+                  <div key={id} onClick={() => update('stressResponse', id)}
+                    style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:14, cursor:'pointer', transition:'all .15s',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)' }}>
+                    <span style={{ fontSize:20, flexShrink:0 }}>{e}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight: sel?600:500 }}>{label}</div>
+                      <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>{sub}</div>
+                    </div>
+                    {sel && <Icon name="Check" size={16} strokeWidth={2.5} style={{ color:'var(--gold)', flexShrink:0 }}/>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:10 }}>Your natural body type</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+              {[['lean','🦴','Lean','Hard to gain weight'],['medium','⚖️','Medium','Balanced build'],['stocky','🫀','Stocky','Tends to retain weight']].map(([id, e, label, sub]) => {
+                const sel = data.bodyBuild === id;
+                return (
+                  <button key={id} onClick={() => update('bodyBuild', id)}
+                    style={{ padding:'13px 8px', borderRadius:12, textAlign:'center', cursor:'pointer',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      color: sel ? 'var(--gold)' : 'var(--text-dim)' }}>
+                    <div style={{ fontSize:22, marginBottom:5 }}>{e}</div>
+                    <div style={{ fontSize:12, fontWeight: sel?600:500 }}>{label}</div>
+                    <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2, lineHeight:1.3 }}>{sub}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
-          <div className="glass" style={{ padding:'24px 20px', marginBottom:18, position:'relative', overflow:'hidden' }}>
+    function OBReveal({ data, protocolId, prakriti }) {
+      const proto = PROTOCOLS[protocolId] || PROTOCOLS.code90;
+      const firstName = data.name.split(' ')[0];
+      const PRAKRITI_INFO = {
+        vata:  { name:'Vata',  emoji:'🌬️', color:'#60A5FA', desc:'Air & Space — creative, mobile, irregular. Needs grounding, warmth, and routine.', herbs:['Ashwagandha','Shatavari','Bala']        },
+        pitta: { name:'Pitta', emoji:'🔥', color:'#FB923C', desc:'Fire & Water — focused, intense, driven. Needs cooling, moderation, and calm.',    herbs:['Brahmi','Amla','Neem']                  },
+        kapha: { name:'Kapha', emoji:'🌊', color:'#4ADE80', desc:'Earth & Water — stable, nurturing, slow. Needs stimulation, lightness, movement.',  herbs:['Triphala','Trikatu','Guggul']           },
+      };
+      const pk = PRAKRITI_INFO[prakriti] || PRAKRITI_INFO.pitta;
+      const insights = [];
+      const pkInsights = {
+        vata:  'Vata constitution — grounding herbs (Ashwagandha, Shatavari) and warm meal timing anchor your protocol.',
+        pitta: 'Pitta constitution — cooling herbs (Brahmi, Amla) and anti-inflammatory foods are prioritized.',
+        kapha: 'Kapha constitution — metabolic herbs (Triphala, Trikatu) and morning fasting windows are built in.',
+      };
+      if (prakriti) insights.push(pkInsights[prakriti]);
+      if (data.conditions.includes('pcos'))     insights.push('PCOS noted — meal timing adjusted for hormonal balance, spearmint tea added to your herb stack.');
+      if (data.conditions.includes('thyroid'))  insights.push('Thyroid noted — selenium-rich foods added, Sarvangasana and Matsyasana in your asana set.');
+      if (data.conditions.includes('diabetes')) insights.push('Blood sugar noted — low-glycemic meals, Gymnema Sylvestre added to your protocol.');
+      if (data.conditions.includes('bp'))       insights.push('High BP noted — Arjuna bark tea and calming pranayama added to your evening routine.');
+      if (data.conditions.includes('stress'))   insights.push('Chronic stress noted — Ashwagandha KSM-66 and Brahmi anchor your herb stack.');
+      if (data.stressLevel >= 7 || data.sleepQuality === 'rarely') insights.push('High stress + poor sleep detected — Soma Engine starts in Amrita (deep recovery) mode.');
+      if (data.barrier === 'consistency') insights.push('Consistency is your challenge — daily streak, micro-habits, and an evening checklist are built in.');
+      if (data.barrier === 'no_plan')     insights.push('No plan before — your 90-day timetable maps every meal, herb, asana, and workout.');
+      return (
+        <div>
+          <div style={{ fontSize:12, color:'var(--gold)', fontWeight:600, letterSpacing:'.15em', textTransform:'uppercase', marginBottom:10 }}>Your protocol</div>
+          <div className="serif" style={{ fontSize:36, lineHeight:1.1, marginBottom:6 }}>{firstName ? `${firstName}, meet your system.` : 'Meet your system.'}</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:20, lineHeight:1.5 }}>Built around your body, constitution, and lifestyle.</div>
+          <div className="glass" style={{ padding:'20px', marginBottom:14, position:'relative', overflow:'hidden' }}>
             <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 80% 0%, ${proto.color}22, transparent 60%)`, pointerEvents:'none' }}/>
-            <div style={{ position:'relative' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
-                <div style={{ width:60, height:60, borderRadius:18, background:`${proto.color}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:30, border:`0.5px solid ${proto.color}40` }}>{proto.emoji}</div>
-                <div>
-                  <div className="serif" style={{ fontSize:26, lineHeight:1 }}>{proto.name}</div>
-                  <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:4 }}>{proto.tagline}</div>
-                </div>
+            <div style={{ position:'relative', display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
+              <div style={{ width:56, height:56, borderRadius:16, background:`${proto.color}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, border:`0.5px solid ${proto.color}40`, flexShrink:0 }}>{proto.emoji}</div>
+              <div>
+                <div className="serif" style={{ fontSize:24, lineHeight:1 }}>{proto.name}</div>
+                <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:4 }}>{proto.tagline}</div>
               </div>
-              <div style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.55, marginBottom:16 }}>{proto.desc}</div>
-              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
-                {proto.phases.slice(0,4).map((p,i) => (
-                  <div key={i} style={{ padding:'5px 10px', borderRadius:999, background:'var(--bg-card-2)', fontSize:11, fontWeight:500, color:'var(--text-dim)', border:'0.5px solid var(--border-soft)' }}>
-                    Phase {i+1} · {p.name}
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
+              {[['90','Days'],['4','Phases'],[`${data.timePerDay}m`,'Per day']].map(([v,l]) => (
+                <div key={l} style={{ padding:'10px 8px', borderRadius:12, background:'var(--bg-card-2)', textAlign:'center' }}>
+                  <div style={{ fontFamily:'Geist Mono,monospace', fontSize:20, color:'var(--gold)', lineHeight:1 }}>{v}</div>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:4, textTransform:'uppercase', letterSpacing:'.1em' }}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ padding:'14px 16px', borderRadius:16, marginBottom:14, border:`0.5px solid ${pk.color}44`, background:`${pk.color}11` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+              <span style={{ fontSize:22 }}>{pk.emoji}</span>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:pk.color }}>Your constitution: {pk.name}</div>
+                <div style={{ fontSize:11, color:'var(--text-dim)', marginTop:1 }}>{pk.desc}</div>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+              {pk.herbs.map(h => (
+                <span key={h} style={{ fontSize:11, padding:'3px 9px', borderRadius:999, background:`${pk.color}22`, color:'var(--text-dim)', border:`0.5px solid ${pk.color}33` }}>{h}</span>
+              ))}
+              <span style={{ fontSize:11, padding:'3px 9px', borderRadius:999, background:'var(--bg-card-2)', color:'var(--text-faint)', border:'0.5px solid var(--border-soft)' }}>+more in protocol</span>
+            </div>
+          </div>
+          {insights.length > 0 && (
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.14em', color:'var(--text-faint)', fontWeight:600, marginBottom:10 }}>Personalized for you</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+                {insights.slice(0, 4).map((ins, i) => (
+                  <div key={i} style={{ display:'flex', gap:10, padding:'11px 13px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', fontSize:12, color:'var(--text-dim)', lineHeight:1.5 }}>
+                    <span style={{ color:'var(--gold)', flexShrink:0 }}>✓</span>{ins}
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:8, marginBottom:16 }}>
-            <SummaryCell label="Days" value="90" mono/>
-            <SummaryCell label="Phases" value={String(proto.phases.length)} mono/>
-            <SummaryCell label="Per day" value={`${data.timePerDay}m`} mono/>
-          </div>
-
-          <div style={{ fontSize:11, color:'var(--text-faint)', textAlign:'center', lineHeight:1.6, padding:'0 8px' }}>
-            You can switch protocols any time from Settings. Your data stays on your device.
+          )}
+          <div style={{ fontSize:11, color:'var(--text-faint)', textAlign:'center', lineHeight:1.7, padding:'0 8px' }}>
+            Data stays on your device. Switch protocols any time from More → Settings.
           </div>
         </div>
       );
