@@ -1,0 +1,19 @@
+{
+  "name": "SVVA — Your Vedic Health System",
+  "short_name": "SVVA",
+  "description": "Ancient wisdom. Precision science. Your personal 90-day Vedic health protocol.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "orientation": "portrait-primary",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230A0A0A'/><text x='96' y='130' font-size='100' text-anchor='middle'>🪷</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

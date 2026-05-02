@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SVVA" />
   <meta name="theme-color" content="#0A0A0A" />
+  <link rel="manifest" href="./manifest.json" />
   <title>SVVA — Your Vedic Health System</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -2000,7 +2002,7 @@
       );
     }
 
-    function BodyScreen() {
+    function BodyScreen({ embedded = false }) {
       const [measurements, setMeasurements] = useState(() => S.get('measurements', { height:0, waist:0, neck:0 }));
       const [reference, setReference]       = useState(() => S.get('reference', null));
       const [photos, setPhotos]             = useState(() => S.get('progress_photos', { body:[], hair:[], skin:[] }));
@@ -2032,16 +2034,8 @@
         return latest.note || 'No change noted yet.';
       };
 
-      return (
-        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
-          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
-            <div style={{ paddingTop:8, marginBottom:20 }}>
-              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Body Tracking</div>
-              <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>Body & Progress</div>
-            </div>
-          </div>
-
-          <div style={{ padding:'0 20px' }}>
+      const bodyContent = (
+          <div style={{ padding: embedded ? '0' : '0 20px' }}>
 
             {/* Body fat card */}
             <GlassCard strong style={{ padding:20, marginBottom:12 }}>
@@ -2229,6 +2223,19 @@
           <MeasurementsModal open={showMeasure} onClose={() => setShowMeasure(false)} measurements={measurements} onSave={saveMeasurements}/>
           <ReferenceModal    open={showRef}     onClose={() => setShowRef(false)}     onSave={saveReference}/>
           <ProgressPhotoModal open={!!photoModal} onClose={() => setPhotoModal(null)} category={photoModal} onSave={p => addPhoto(photoModal, p)}/>
+        </div>
+      );
+
+      if (embedded) return bodyContent;
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <div style={{ paddingTop:8, marginBottom:20 }}>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Body Tracking</div>
+              <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>Body & Progress</div>
+            </div>
+          </div>
+          {bodyContent}
         </div>
       );
     }
@@ -2849,7 +2856,7 @@
 
     function MoreScreen({ theme, setTheme }) {
       const [tab, setTab] = useState('profile');
-      const tabs = [['profile','Profile','👤'],['wearables','Wearables','⌚'],['drinks','Drinks','🌿'],['asanas','Asanas','🧘'],['pranayama','Breath','🌬️'],['analytics','Analytics','📊'],['settings','Settings','⚙️']];
+      const tabs = [['profile','Profile','👤'],['body','Body','💪'],['wearables','Devices','⌚'],['drinks','Drinks','🌿'],['asanas','Asanas','🧘'],['pranayama','Breath','🌬️'],['analytics','Analytics','📊'],['settings','Settings','⚙️']];
 
       return (
         <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
@@ -2871,6 +2878,7 @@
           </div>
           <div className="scroll-y no-bar" style={{ flex:1, padding:'8px 20px', paddingBottom:100 }}>
             {tab === 'profile'   && <ProfileTab/>}
+            {tab === 'body'      && <BodyScreen embedded/>}
             {tab === 'wearables' && <WearablesTab/>}
             {tab === 'drinks'    && <DrinksTab/>}
             {tab === 'asanas'    && <AsanasTab/>}
@@ -3220,10 +3228,10 @@
     function BottomNav({ active, onChange }) {
       const tabs = [
         { id:'home',      label:'Home',      icon:'House'      },
-        { id:'protocols', label:'Protocols', icon:'BookOpen'   },
+        { id:'protocols', label:'Protocols', icon:'Layers'     },
         { id:'food',      label:'Food',      icon:'Utensils'   },
         { id:'gym',       label:'Gym',       icon:'Dumbbell'   },
-        { id:'more',      label:'More',      icon:'LayoutGrid' },
+        { id:'more',      label:'More',      icon:'Grid3x3'    },
       ];
       return (
         <div className="safe-b" style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, padding:'0 16px', paddingBottom:'max(16px,env(safe-area-inset-bottom))' }}>
@@ -3975,11 +3983,21 @@
       const [theme, setTheme] = useState(() => { const t = S.get('theme','dark'); document.documentElement.setAttribute('data-theme',t); return t; });
       const stepData = useStepCounter();
 
+      // Browser / Android back-button support
+      useEffect(() => {
+        window.history.replaceState({ tab: 'home' }, '');
+        const handler = e => { if (e.state?.tab) setTab(e.state.tab); };
+        window.addEventListener('popstate', handler);
+        return () => window.removeEventListener('popstate', handler);
+      }, []);
+
       if (!onboarded) {
         return <Onboarding onComplete={() => setOnboarded(true)}/>;
       }
 
       const changeTab = t => {
+        if (t === tab) return;
+        window.history.pushState({ tab: t }, '');
         setTab(t);
         document.getElementById('svva-scroll')?.scrollTo(0, 0);
       };
@@ -4001,6 +4019,14 @@
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
