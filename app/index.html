@@ -2567,9 +2567,289 @@
       );
     }
 
+    /* ── PHASE 5: PROFILE + WEARABLES ───────────────────────────── */
+    function ProfileTab() {
+      const [profile, setProfile] = useState(() => S.get('profile', {}));
+      const [editing, setEditing]   = useState(null);
+      const [draft, setDraft]       = useState('');
+
+      const ACTIVITY = [
+        { id:'sedentary', label:'Sedentary' },
+        { id:'light',     label:'Light'     },
+        { id:'moderate',  label:'Moderate'  },
+        { id:'very',      label:'Very Active'},
+      ];
+      const DIETS = [
+        { id:'veg',    label:'Vegetarian'    },
+        { id:'nonveg', label:'Non-Veg'       },
+        { id:'vegan',  label:'Vegan'         },
+        { id:'egg',    label:'Eggetarian'    },
+      ];
+
+      const persist = updated => { setProfile(updated); S.set('profile', updated); };
+      const saveField = (key, val) => { persist({ ...profile, [key]: val }); setEditing(null); };
+
+      const bmi = useMemo(() => {
+        const h = (profile.height || 0) / 100;
+        const w = profile.weight || 0;
+        if (!h || !w) return null;
+        return (w / (h * h)).toFixed(1);
+      }, [profile.height, profile.weight]);
+
+      const tdee = useMemo(() => {
+        const { weight:wt, height:ht, age, activityLevel:al } = profile;
+        if (!wt || !ht || !age) return null;
+        const bmr = 10 * wt + 6.25 * ht - 5 * age + 5;
+        const m = { sedentary:1.2, light:1.375, moderate:1.55, very:1.725 };
+        return Math.round(bmr * (m[al] || 1.375));
+      }, [profile.weight, profile.height, profile.age, profile.activityLevel]);
+
+      const fields = [
+        { key:'name',       label:'Name',        type:'text',   unit:''   },
+        { key:'age',        label:'Age',         type:'number', unit:'yrs'},
+        { key:'height',     label:'Height',      type:'number', unit:'cm' },
+        { key:'weight',     label:'Weight',      type:'number', unit:'kg' },
+        { key:'goalWeight', label:'Goal Weight', type:'number', unit:'kg' },
+      ];
+
+      const initial = profile.name ? profile.name[0].toUpperCase() : '?';
+
+      return (
+        <div>
+          {/* Avatar + summary */}
+          <GlassCard style={{ padding:20, marginBottom:12, textAlign:'center' }}>
+            <div style={{ width:68, height:68, borderRadius:999, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', fontSize:30, color:'#1a0f00', fontWeight:700 }}>
+              {initial}
+            </div>
+            <div className="serif" style={{ fontSize:24, marginBottom:4 }}>{profile.name || 'Your Name'}</div>
+            <div style={{ fontSize:12, color:'var(--text-faint)' }}>
+              {[profile.age && `${profile.age} yrs`, profile.activityLevel, profile.diet].filter(Boolean).join(' · ')}
+            </div>
+          </GlassCard>
+
+          {/* Editable metric rows */}
+          <GlassCard style={{ padding:'4px 0', marginBottom:12 }}>
+            {fields.map((f, i) => (
+              <div key={f.key} style={{ padding:'14px 20px', borderBottom: i < fields.length - 1 ? '0.5px solid var(--border-soft)' : 'none', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <div style={{ fontSize:13, color:'var(--text-dim)' }}>{f.label}</div>
+                {editing === f.key ? (
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <input type={f.type} value={draft} onChange={e => setDraft(e.target.value)}
+                      style={{ width:90, textAlign:'right', background:'var(--bg-strong)', border:'0.5px solid var(--gold)', borderRadius:8, padding:'4px 8px', color:'var(--text)', fontSize:14, fontFamily:'Geist Mono,monospace', outline:'none' }}
+                      autoFocus
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') saveField(f.key, f.type === 'number' ? Number(draft) : draft);
+                        if (e.key === 'Escape') setEditing(null);
+                      }}
+                    />
+                    {f.unit && <span style={{ fontSize:12, color:'var(--text-faint)' }}>{f.unit}</span>}
+                    <button onClick={() => saveField(f.key, f.type === 'number' ? Number(draft) : draft)}
+                      style={{ fontSize:12, color:'var(--gold)', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>Save</button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setEditing(f.key); setDraft(String(profile[f.key] || '')); }}
+                    style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer' }}>
+                    <span style={{ fontFamily:'Geist Mono,monospace', fontSize:15, color:'var(--text)' }}>
+                      {profile[f.key]
+                        ? `${profile[f.key]}${f.unit ? ' ' + f.unit : ''}`
+                        : <span style={{ color:'var(--text-faint)', fontFamily:'Plus Jakarta Sans,sans-serif', fontSize:12 }}>Tap to set</span>}
+                    </span>
+                    <Icon name="Pencil" size={13} style={{ color:'var(--text-faint)' }}/>
+                  </button>
+                )}
+              </div>
+            ))}
+          </GlassCard>
+
+          {/* Activity level */}
+          <GlassCard style={{ padding:16, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Activity Level</div>
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+              {ACTIVITY.map(a => (
+                <button key={a.id} onClick={() => persist({ ...profile, activityLevel:a.id })}
+                  style={{ padding:'8px 14px', borderRadius:999, fontSize:12, fontWeight:500, cursor:'pointer',
+                    background: profile.activityLevel === a.id ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
+                    color: profile.activityLevel === a.id ? '#1a0f00' : 'var(--text-dim)',
+                    border:`0.5px solid ${profile.activityLevel === a.id ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* Diet preference */}
+          <GlassCard style={{ padding:16, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Diet Preference</div>
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+              {DIETS.map(d => (
+                <button key={d.id} onClick={() => persist({ ...profile, diet:d.id })}
+                  style={{ padding:'8px 14px', borderRadius:999, fontSize:12, fontWeight:500, cursor:'pointer',
+                    background: profile.diet === d.id ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
+                    color: profile.diet === d.id ? '#1a0f00' : 'var(--text-dim)',
+                    border:`0.5px solid ${profile.diet === d.id ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* Computed metrics */}
+          {(bmi || tdee) && (
+            <GlassCard style={{ padding:16, marginBottom:12 }}>
+              <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Your Numbers</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                {bmi && (
+                  <div style={{ background:'var(--bg-card-2)', borderRadius:14, padding:16, textAlign:'center' }}>
+                    <div style={{ fontFamily:'Geist Mono,monospace', fontSize:32, lineHeight:1, color: bmi < 18.5 || bmi >= 25 ? 'var(--orange)' : 'var(--green)' }}>{bmi}</div>
+                    <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>BMI</div>
+                    <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>
+                      {bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese'}
+                    </div>
+                  </div>
+                )}
+                {tdee && (
+                  <div style={{ background:'var(--bg-card-2)', borderRadius:14, padding:16, textAlign:'center' }}>
+                    <div style={{ fontFamily:'Geist Mono,monospace', fontSize:32, lineHeight:1, color:'var(--gold)' }}>{tdee}</div>
+                    <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>TDEE kcal/day</div>
+                    <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>Maintenance</div>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          )}
+        </div>
+      );
+    }
+
+    function WearablesTab() {
+      const [appleStatus, setAppleStatus] = useState('idle');   // idle|connecting|connected|unavailable
+      const [btStatus,    setBtStatus]    = useState('idle');   // idle|scanning|connected|unavailable
+      const [btDevice,    setBtDevice]    = useState(null);
+
+      const connectAppleHealth = async () => {
+        if (!navigator.health) { setAppleStatus('unavailable'); return; }
+        setAppleStatus('connecting');
+        try {
+          await navigator.health.requestAuthorization({ read: ['steps','heartRate','activeEnergyBurned','sleepAnalysis'] });
+          setAppleStatus('connected');
+        } catch { setAppleStatus('unavailable'); }
+      };
+
+      const connectBluetooth = async () => {
+        if (!navigator.bluetooth) { setBtStatus('unavailable'); return; }
+        setBtStatus('scanning');
+        try {
+          const device = await navigator.bluetooth.requestDevice({ acceptAllDevices:true });
+          setBtDevice(device.name || 'Unknown Device');
+          setBtStatus('connected');
+        } catch { setBtStatus('idle'); }
+      };
+
+      const StatusBadge = ({ status }) => {
+        const map = {
+          idle:        { label:'Not Connected', color:'var(--text-faint)',   bg:'var(--bg-card)' },
+          connecting:  { label:'Connecting…',   color:'var(--gold)',         bg:'rgba(232,201,122,0.1)' },
+          scanning:    { label:'Scanning…',     color:'var(--gold)',         bg:'rgba(232,201,122,0.1)' },
+          connected:   { label:'Connected',     color:'var(--green)',        bg:'rgba(74,222,128,0.1)'  },
+          unavailable: { label:'Not Available', color:'var(--orange)',       bg:'rgba(251,146,60,0.1)'  },
+        };
+        const s = map[status] || map.idle;
+        return (
+          <span style={{ display:'inline-block', padding:'3px 9px', borderRadius:999, fontSize:11, fontWeight:500, color:s.color, background:s.bg, border:`0.5px solid ${s.color}` }}>
+            {s.label}
+          </span>
+        );
+      };
+
+      const ComingSoon = () => (
+        <span style={{ display:'inline-block', padding:'3px 9px', borderRadius:999, fontSize:11, fontWeight:500, color:'var(--text-faint)', background:'var(--bg-card)', border:'0.5px solid var(--border-soft)' }}>
+          Coming Soon
+        </span>
+      );
+
+      const WCard = ({ icon, title, subtitle, status, action, comingSoon }) => (
+        <GlassCard style={{ padding:18, marginBottom:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+            <div style={{ fontSize:32, lineHeight:1, flexShrink:0 }}>{icon}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14, fontWeight:600 }}>{title}</div>
+              <div style={{ fontSize:12, color:'var(--text-faint)', marginTop:2, lineHeight:1.4 }}>{subtitle}</div>
+              <div style={{ marginTop:8 }}>
+                {comingSoon ? <ComingSoon/> : <StatusBadge status={status}/>}
+              </div>
+            </div>
+            {!comingSoon && action && (
+              <div style={{ flexShrink:0 }}>{action}</div>
+            )}
+          </div>
+        </GlassCard>
+      );
+
+      const ConnectBtn = ({ label, onClick, disabled }) => (
+        <button onClick={onClick} disabled={disabled}
+          style={{ padding:'9px 16px', borderRadius:12, fontSize:12, fontWeight:600, cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.5 : 1,
+            background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', color:'#1a0f00', border:'none' }}>
+          {label}
+        </button>
+      );
+
+      return (
+        <div>
+          <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:12, letterSpacing:'0.06em', textTransform:'uppercase', fontWeight:600 }}>Apple</div>
+          <WCard
+            icon="🍎"
+            title="Apple Health"
+            subtitle={appleStatus === 'unavailable' ? 'Requires iOS Safari 16.4+' : 'Steps, heart rate, sleep, calories'}
+            status={appleStatus}
+            action={<ConnectBtn label={appleStatus === 'connected' ? 'Sync Now' : 'Connect'} onClick={connectAppleHealth} disabled={appleStatus === 'connecting'}/>}
+          />
+          <WCard
+            icon="⌚"
+            title="Apple Watch"
+            subtitle="Via Apple Health — connect Health first"
+            status={appleStatus === 'connected' ? 'connected' : 'idle'}
+          />
+
+          <div style={{ fontSize:11, color:'var(--text-faint)', margin:'20px 0 12px', letterSpacing:'0.06em', textTransform:'uppercase', fontWeight:600 }}>Google</div>
+          <WCard
+            icon="🤸"
+            title="Google Fit"
+            subtitle="Android steps, workouts, sleep"
+            comingSoon
+          />
+
+          <div style={{ fontSize:11, color:'var(--text-faint)', margin:'20px 0 12px', letterSpacing:'0.06em', textTransform:'uppercase', fontWeight:600 }}>Bluetooth Devices</div>
+          <WCard
+            icon="📡"
+            title={btDevice ? `${btDevice}` : 'Scan for Device'}
+            subtitle={btStatus === 'unavailable' ? 'Web Bluetooth not supported in this browser' : 'Connect any BLE fitness device'}
+            status={btStatus}
+            action={<ConnectBtn label={btStatus === 'connected' ? 'Re-Scan' : 'Scan'} onClick={connectBluetooth} disabled={btStatus === 'scanning'}/>}
+          />
+
+          <div style={{ fontSize:11, color:'var(--text-faint)', margin:'20px 0 12px', letterSpacing:'0.06em', textTransform:'uppercase', fontWeight:600 }}>Smart Bands</div>
+          {[
+            { icon:'🚣', name:'Boat Band',     note:'BLE integration in progress' },
+            { icon:'🎵', name:'Noise ColorFit', note:'BLE integration in progress' },
+            { icon:'⌚', name:'Mi Band',        note:'BLE integration in progress' },
+            { icon:'🏃', name:'Garmin',         note:'OAuth setup in progress'     },
+            { icon:'🔶', name:'Fitbit',         note:'OAuth setup in progress'     },
+          ].map(d => (
+            <WCard key={d.name} icon={d.icon} title={d.name} subtitle={d.note} comingSoon/>
+          ))}
+
+          <GlassCard style={{ padding:16, marginTop:4, marginBottom:12 }}>
+            <div style={{ fontSize:12, color:'var(--text-faint)', lineHeight:1.6 }}>
+              <strong style={{ color:'var(--text-dim)' }}>How it works:</strong> Apple Health uses the Web HealthKit API (Safari on iPhone only). Bluetooth uses Web Bluetooth (Chrome/Edge). Data syncs to Home screen stats automatically.
+            </div>
+          </GlassCard>
+        </div>
+      );
+    }
+
     function MoreScreen({ theme, setTheme }) {
-      const [tab, setTab] = useState('drinks');
-      const tabs = [['drinks','Drinks','🌿'],['asanas','Asanas','🧘'],['pranayama','Breath','🌬️'],['analytics','Analytics','📊'],['settings','Settings','⚙️']];
+      const [tab, setTab] = useState('profile');
+      const tabs = [['profile','Profile','👤'],['wearables','Wearables','⌚'],['drinks','Drinks','🌿'],['asanas','Asanas','🧘'],['pranayama','Breath','🌬️'],['analytics','Analytics','📊'],['settings','Settings','⚙️']];
 
       return (
         <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
@@ -2590,6 +2870,8 @@
             </div>
           </div>
           <div className="scroll-y no-bar" style={{ flex:1, padding:'8px 20px', paddingBottom:100 }}>
+            {tab === 'profile'   && <ProfileTab/>}
+            {tab === 'wearables' && <WearablesTab/>}
             {tab === 'drinks'    && <DrinksTab/>}
             {tab === 'asanas'    && <AsanasTab/>}
             {tab === 'pranayama' && <PranayamaTab/>}
