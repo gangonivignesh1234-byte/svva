@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SVVA" />
+  <meta name="theme-color" content="#0B0B0B" />
+  <title>SVVA — Code 90</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.js"></script>
+
+  <style>
+    /* ── SECTION B: THEME + STYLES ──────────────────────────────── */
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    :root, [data-theme="dark"] {
+      --bg:          #0B0B0B;
+      --bg-card:     rgba(255,255,255,0.06);
+      --bg-card-2:   rgba(255,255,255,0.03);
+      --bg-strong:   rgba(255,255,255,0.10);
+      --border:      rgba(255,255,255,0.12);
+      --border-soft: rgba(255,255,255,0.06);
+      --text:        #FFFFFF;
+      --text-dim:    rgba(255,255,255,0.55);
+      --text-faint:  rgba(255,255,255,0.30);
+      --gold:        #F4E4C1;
+      --gold-deep:   #C99B5B;
+      --glow-a:      rgba(180,140,90,0.18);
+      --glow-b:      rgba(100,70,140,0.12);
+      --blur:        28px;
+      --radius:      20px;
+      --green:       #A8D5BA;
+      --blue:        #7CC4FF;
+      --purple:      #B8A5E3;
+      --orange:      #FFB070;
+      --red:         #FF7090;
+    }
+
+    [data-theme="white"] {
+      --bg:          #F5F2ED;
+      --bg-card:     rgba(255,255,255,0.75);
+      --bg-card-2:   rgba(255,255,255,0.45);
+      --bg-strong:   rgba(255,255,255,0.90);
+      --border:      rgba(0,0,0,0.10);
+      --border-soft: rgba(0,0,0,0.05);
+      --text:        #1A1510;
+      --text-dim:    rgba(26,21,16,0.55);
+      --text-faint:  rgba(26,21,16,0.30);
+      --gold:        #8B6420;
+      --gold-deep:   #6B4C16;
+      --glow-a:      rgba(180,140,90,0.10);
+      --glow-b:      rgba(100,70,140,0.06);
+    }
+
+    html, body, #root {
+      width:100%; height:100%; min-height:100dvh;
+      background:var(--bg);
+      font-family:'Geist',-apple-system,system-ui,sans-serif;
+      color:var(--text);
+      overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    body { padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+
+    .serif { font-family:'Instrument Serif',serif; }
+    .mono  { font-family:'Geist Mono',monospace; }
+
+    .glass {
+      background:linear-gradient(160deg,var(--bg-strong),var(--bg-card-2));
+      backdrop-filter:blur(var(--blur)) saturate(180%);
+      -webkit-backdrop-filter:blur(var(--blur)) saturate(180%);
+      border:0.5px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .glass-flat {
+      background:var(--bg-card);
+      border:0.5px solid var(--border-soft);
+      border-radius:var(--radius);
+    }
+    [data-theme="white"] .glass {
+      box-shadow:0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes popIn  { from{opacity:0;transform:scale(0.93) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    @keyframes breathe{ 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.06);opacity:.4} }
+    @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.35} }
+    @keyframes micPulse{ 0%,100%{box-shadow:0 0 0 0 rgba(255,112,144,.5)} 50%{box-shadow:0 0 0 12px rgba(255,112,144,0)} }
+
+    .fade-up  { animation:fadeUp .32s ease-out both; }
+    .pop-in   { animation:popIn  .32s cubic-bezier(.16,1,.3,1) both; }
+    .breathe  { animation:breathe 4s ease-in-out infinite; }
+    .pulse-dot{ animation:pulse   2s ease-in-out infinite; }
+    .mic-live { animation:micPulse 1.2s ease-in-out infinite; }
+
+    .scroll-y { overflow-y:auto; overflow-x:hidden; }
+    .scroll-x { overflow-x:auto; overflow-y:hidden; }
+    .no-bar   { scrollbar-width:none; }
+    .no-bar::-webkit-scrollbar { display:none; }
+
+    input[type=range].eg {
+      -webkit-appearance:none; appearance:none;
+      width:100%; height:4px;
+      background:var(--border); border-radius:999px; outline:none;
+    }
+    input[type=range].eg::-webkit-slider-thumb {
+      -webkit-appearance:none;
+      width:22px; height:22px; border-radius:50%;
+      background:var(--gold); box-shadow:0 2px 8px rgba(0,0,0,.3); cursor:pointer;
+    }
+
+    .safe-t { padding-top:max(16px,env(safe-area-inset-top)); }
+    .safe-b { padding-bottom:max(16px,env(safe-area-inset-bottom)); }
+
+    .bar-track { height:6px; border-radius:999px; background:var(--border-soft); overflow:hidden; }
+    .bar-fill  { height:100%; border-radius:999px; transition:width .4s ease; }
+
+    .nav-glass {
+      background:rgba(12,10,8,.86);
+      backdrop-filter:blur(40px) saturate(180%);
+      -webkit-backdrop-filter:blur(40px) saturate(180%);
+      border:0.5px solid rgba(255,255,255,.10);
+    }
+    [data-theme="white"] .nav-glass {
+      background:rgba(245,242,237,.90);
+      border:0.5px solid rgba(0,0,0,.08);
+    }
+
+    .overlay {
+      position:fixed; inset:0; z-index:100;
+      background:rgba(0,0,0,.6);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
+      display:flex; align-items:flex-end;
+    }
+    .modal-sheet {
+      width:100%; max-height:92dvh;
+      background:var(--bg);
+      border-radius:28px 28px 0 0;
+      border-top:0.5px solid var(--border);
+      overflow-y:auto;
+    }
+
+    .h-pills { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; }
+    .h-pills::-webkit-scrollbar { display:none; }
+
+    .grain-overlay::after {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      opacity:.04; mix-blend-mode:overlay; border-radius:inherit;
+      background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+    const LR = window.LucideReact || {};
+
+    /* ── STORAGE ─────────────────────────────────────────────────── */
+    const S = {
+      get:(k,d)=>{ try{ const v=localStorage.getItem('svva_'+k); return v?JSON.parse(v):d; }catch{ return d; } },
+      set:(k,v)=>{ try{ localStorage.setItem('svva_'+k,JSON.stringify(v)); }catch{} },
+      clear:()=>{ try{ Object.keys(localStorage).filter(k=>k.startsWith('svva_')).forEach(k=>localStorage.removeItem(k)); }catch{} },
+    };
+
+    /* ── SOMA ENGINE (port of SomaEngine.ts) ────────────────────── */
+    const SomaEngine = {
+      calculate(battleIntensity, dawnClarity) {
+        const hinge = battleIntensity * 0.6 + dawnClarity * 0.4;
+        if (hinge > 0.75) return { somaRequirement:0.9, hinge, protocolType:'Amrita', label:'Critical Restore',
+          description:'Deep Breathing + Sensory Deprivation. No screens after 9 PM.', color:'#B8A5E3', emoji:'🌙' };
+        if (hinge > 0.45) return { somaRequirement:0.7, hinge, protocolType:'Yajna', label:'Balanced Recovery',
+          description:'Pranayama + Light Movement + Warm Sesame Oil massage.', color:'#F4E4C1', emoji:'🔥' };
+        return { somaRequirement:0.5, hinge, protocolType:'Tapas', label:'Active Recovery',
+          description:'Vedic Rhythmic Movement + Heat Exposure + Cold Rinse.', color:'#A8D5BA', emoji:'⚡' };
+      },
+    };
+
+    /* ── MINERAL TARGETS ─────────────────────────────────────────── */
+    const MINERALS = [
+      { key:'iron',      label:'Iron',      unit:'mg', target:18,   color:'#FF7090', icon:'Flame'  },
+      { key:'potassium', label:'Potassium', unit:'mg', target:3500, color:'#FFB070', icon:'Zap'    },
+      { key:'zinc',      label:'Zinc',      unit:'mg', target:11,   color:'#7CC4FF', icon:'Shield' },
+      { key:'magnesium', label:'Magnesium', unit:'mg', target:400,  color:'#B8A5E3', icon:'Moon'   },
+    ];
+
+    /* ── FOOD DATABASE — 35 Indian / Ayurvedic foods ─────────────── */
+    const FOOD_DB = [
+      { id:1,  name:'Moong Dal',          emoji:'🟡', cal:347, p:24,  c:63,  f:1.2, iron:6.7,  k:789,  zn:2.7, mg:189, cat:'dal',     tags:['sattvik','protein','hair'] },
+      { id:2,  name:'Masoor Dal',         emoji:'🔴', cal:353, p:25,  c:60,  f:1,   iron:7.6,  k:677,  zn:3.3, mg:122, cat:'dal',     tags:['iron','protein'] },
+      { id:3,  name:'Chana Dal',          emoji:'🟤', cal:364, p:22,  c:61,  f:5,   iron:4.9,  k:875,  zn:2.8, mg:115, cat:'dal',     tags:['fiber'] },
+      { id:4,  name:'Rajma',              emoji:'🫘', cal:337, p:22,  c:61,  f:1.5, iron:6.7,  k:1406, zn:2.8, mg:138, cat:'legume',  tags:['protein','potassium'] },
+      { id:5,  name:'Brown Rice',         emoji:'🍚', cal:370, p:7.9, c:77,  f:2.9, iron:1.5,  k:268,  zn:2,   mg:143, cat:'grain',   tags:['complex-carb'] },
+      { id:6,  name:'Ragi',               emoji:'🌾', cal:336, p:7.3, c:72,  f:1.9, iron:3.9,  k:408,  zn:2.3, mg:137, cat:'grain',   tags:['calcium','iron'] },
+      { id:7,  name:'Oats',               emoji:'🥣', cal:389, p:17,  c:66,  f:7,   iron:4.7,  k:429,  zn:4,   mg:177, cat:'grain',   tags:['fiber','protein'] },
+      { id:8,  name:'Chicken Breast',     emoji:'🍗', cal:165, p:31,  c:0,   f:3.6, iron:1,    k:256,  zn:1,   mg:29,  cat:'protein', tags:['lean','protein'] },
+      { id:9,  name:'Eggs',               emoji:'🥚', cal:155, p:13,  c:1,   f:11,  iron:1.8,  k:138,  zn:1.3, mg:12,  cat:'protein', tags:['complete-protein'] },
+      { id:10, name:'Paneer',             emoji:'🧀', cal:265, p:18,  c:3,   f:20,  iron:0.5,  k:100,  zn:2.1, mg:8,   cat:'dairy',   tags:['protein','calcium'] },
+      { id:11, name:'Spinach',            emoji:'🥬', cal:23,  p:2.9, c:3.6, f:0.4, iron:2.7,  k:558,  zn:0.5, mg:79,  cat:'veg',     tags:['iron','sattvik'] },
+      { id:12, name:'Moringa Leaves',     emoji:'🌿', cal:64,  p:9.4, c:8.3, f:1.4, iron:4,    k:337,  zn:0.6, mg:147, cat:'veg',     tags:['superfood','iron','hair'] },
+      { id:13, name:'Amla',               emoji:'🫐', cal:44,  p:0.9, c:10,  f:0.6, iron:0.3,  k:198,  zn:0.1, mg:10,  cat:'fruit',   tags:['vitamin-c','hair','skin'] },
+      { id:14, name:'Banana',             emoji:'🍌', cal:89,  p:1.1, c:23,  f:0.3, iron:0.3,  k:358,  zn:0.2, mg:27,  cat:'fruit',   tags:['potassium','energy'] },
+      { id:15, name:'Pumpkin Seeds',      emoji:'🎃', cal:559, p:30,  c:10,  f:49,  iron:8.8,  k:809,  zn:7.8, mg:592, cat:'seeds',   tags:['zinc','magnesium','hair'] },
+      { id:16, name:'Almonds',            emoji:'🌰', cal:579, p:21,  c:22,  f:50,  iron:3.7,  k:733,  zn:3.1, mg:270, cat:'nuts',    tags:['healthy-fat','magnesium'] },
+      { id:17, name:'Walnuts',            emoji:'🪨', cal:654, p:15,  c:14,  f:65,  iron:2.9,  k:441,  zn:3.1, mg:158, cat:'nuts',    tags:['omega-3','brain'] },
+      { id:18, name:'Sweet Potato',       emoji:'🍠', cal:86,  p:1.6, c:20,  f:0.1, iron:0.6,  k:337,  zn:0.3, mg:25,  cat:'veg',     tags:['beta-carotene'] },
+      { id:19, name:'Curd / Yogurt',      emoji:'🥛', cal:98,  p:11,  c:4,   f:4,   iron:0.1,  k:141,  zn:0.9, mg:12,  cat:'dairy',   tags:['probiotic'] },
+      { id:20, name:'Black Sesame',       emoji:'⬛', cal:573, p:17,  c:23,  f:50,  iron:14.6, k:468,  zn:7.8, mg:346, cat:'seeds',   tags:['iron','calcium','hair'] },
+      { id:21, name:'Flaxseeds',          emoji:'🟫', cal:534, p:18,  c:29,  f:42,  iron:5.7,  k:813,  zn:4.3, mg:392, cat:'seeds',   tags:['omega-3','magnesium'] },
+      { id:22, name:'Quinoa',             emoji:'🌿', cal:368, p:14,  c:64,  f:6,   iron:4.6,  k:563,  zn:3.1, mg:197, cat:'grain',   tags:['complete-protein'] },
+      { id:23, name:'Coconut Water',      emoji:'🥥', cal:19,  p:0.7, c:4,   f:0.2, iron:0.3,  k:250,  zn:0.1, mg:25,  cat:'drink',   tags:['electrolytes'] },
+      { id:24, name:'Pomegranate',        emoji:'❤️', cal:83,  p:1.7, c:19,  f:1.2, iron:0.3,  k:236,  zn:0.4, mg:12,  cat:'fruit',   tags:['antioxidant','skin'] },
+      { id:25, name:'Moong Dal Khichdi',  emoji:'🥘', cal:180, p:9,   c:30,  f:3,   iron:2,    k:300,  zn:1,   mg:50,  cat:'meal',    tags:['sattvik','light'] },
+      { id:26, name:'Dal Tadka',          emoji:'🍲', cal:150, p:8,   c:20,  f:5,   iron:3,    k:400,  zn:1.2, mg:60,  cat:'meal',    tags:['protein'] },
+      { id:27, name:'Masala Chai',        emoji:'☕', cal:50,  p:2,   c:6,   f:2,   iron:0.2,  k:90,   zn:0.1, mg:10,  cat:'drink',   tags:['stimulant'] },
+      { id:28, name:'Idli (2 pcs)',       emoji:'⚪', cal:130, p:4,   c:26,  f:0.5, iron:1.2,  k:120,  zn:0.5, mg:20,  cat:'meal',    tags:['fermented','light'] },
+      { id:29, name:'Soaked Chickpeas',   emoji:'🫘', cal:164, p:8.9, c:27,  f:2.6, iron:2.9,  k:291,  zn:1.5, mg:48,  cat:'legume',  tags:['fiber'] },
+      { id:30, name:'Turmeric Milk',      emoji:'🟡', cal:120, p:6,   c:10,  f:6,   iron:0.8,  k:290,  zn:1,   mg:28,  cat:'drink',   tags:['anti-inflammatory','skin'] },
+      { id:31, name:'Ghee (1 tsp)',       emoji:'🫙', cal:45,  p:0,   c:0,   f:5,   iron:0,    k:1,    zn:0,   mg:0,   cat:'fat',     tags:['sattvik','digestion'] },
+      { id:32, name:'Jowar Roti',         emoji:'🫓', cal:175, p:5.5, c:36,  f:2,   iron:2.1,  k:175,  zn:0.9, mg:83,  cat:'grain',   tags:['gluten-free'] },
+      { id:33, name:'Poha',               emoji:'🍽️', cal:270, p:5,   c:55,  f:3,   iron:2.8,  k:180,  zn:0.8, mg:35,  cat:'meal',    tags:['light','iron'] },
+      { id:34, name:'Sprouts Salad',      emoji:'🌱', cal:80,  p:8,   c:12,  f:1,   iron:2.5,  k:320,  zn:1.2, mg:45,  cat:'salad',   tags:['raw','enzyme'] },
+      { id:35, name:'Ashwagandha Latte',  emoji:'🌙', cal:130, p:5,   c:12,  f:6,   iron:1.5,  k:200,  zn:0.3, mg:30,  cat:'drink',   tags:['adaptogen','recovery'] },
+    ];
+
+    /* ── PROTOCOLS ───────────────────────────────────────────────── */
+    const PROTOCOLS = {
+      code90: { id:'code90', name:'Code 90', emoji:'🏆', color:'#F4E4C1', tagline:'90-Day Total Reset',
+        desc:'Complete body-mind transformation through Vedic wisdom + modern science.',
+        phases:[
+          { name:'Foundation', range:'Day 1–21', focus:'Detox · Sleep Reset · Gut Healing',
+            tasks:['Wake by 5:30 AM daily','500ml warm water on waking','Triphala at bedtime','No processed sugar or refined flour','Sleep by 10:30 PM','Log all meals','16:8 fasting from Day 7'] },
+          { name:'Activation', range:'Day 22–42', focus:'Agni Activation · Metabolic Shift',
+            tasks:['Surya Namaskar 12 rounds morning','Ashwagandha milk nightly','Kapalbhati 10 min','Eliminate dairy 21 days','Cold shower post-workout','Steps > 8,000 daily','Meal prep Sunday'] },
+          { name:'Building', range:'Day 43–70', focus:'Muscle · Strength · Habit Lock',
+            tasks:['Gym 5 days Push/Pull/Legs','Protein > 120g daily','Creatine 5g daily','Body photo every Sunday','Nadi Shodhana before bed','No alcohol','Weekly mineral check'] },
+          { name:'Peak', range:'Day 71–90', focus:'Refinement · Sustainable Lifestyle',
+            tasks:['Maintain all Phase 1–3 habits','Chyawanprash morning','Monthly blood test','Final body fat measurement','Design next 90 days','Weekly Abhyanga'] },
+        ] },
+      codeHair: { id:'codeHair', name:'Code Hair', emoji:'💆', color:'#B8A5E3', tagline:'Hair Regrowth Protocol',
+        desc:'Vedic + modern approach targeting follicle health from inside and outside.',
+        phases:[
+          { name:'Scalp Detox', range:'Week 1–2', focus:'Clear Scalp · Reduce DHT · Prep Follicles',
+            tasks:['Bhringraj oil 2x week (leave 2h+)','Amla juice 30ml empty stomach','Sulphate-free shampoo','Dermaroller 0.5mm 1x per week','Cold water scalp rinse','Reduce sugar (DHT trigger)','Pumpkin seeds + black sesame daily'] },
+          { name:'Follicle Activation', range:'Week 3–6', focus:'Stimulate Dormant Follicles',
+            tasks:['Dermaroller 1.0mm every 10 days','Bhringraj + coconut + castor oil blend 1:1:1','Scalp massage 5 min daily','Check Iron + Zinc + Biotin','Flaxseed + moringa daily','No heat styling','Brahmi tea daily'] },
+          { name:'Growth Phase', range:'Week 7–12', focus:'Sustain Growth · Build Thickness',
+            tasks:['Maintain dermaroller + oil routine','Add Neem oil (anti-DHT)','Weekly hair photos','Protein > 100g daily','Sleep 7–8h','Agni Water daily','Monthly assessment'] },
+        ] },
+      codeGlow: { id:'codeGlow', name:'Code Glow', emoji:'✨', color:'#7CC4FF', tagline:'Korean-Vedic Skin Clarity',
+        desc:'Glass skin through Ayurvedic inside-out approach. Clear pores, even tone, glow.',
+        phases:[
+          { name:'Reset', range:'Week 1–3', focus:'Eliminate Triggers · Reset Skin Barrier',
+            tasks:['Double cleanse PM (oil + foam)','No dairy 21 days','Neem + turmeric mask 2x week','Rose water toner after wash','SPF 50+ every morning','Vitamin C daily: amla + citrus','2.5L water minimum'] },
+          { name:'Repair', range:'Week 4–6', focus:'Reduce Pigmentation · Unclog Pores',
+            tasks:['Multani mitti mask weekly','Cold face splash morning','Vitamin E: almonds, sunflower seeds','Sandalwood paste on dark spots','Reduce spicy/fried food','Aloe vera gel night moisturiser','Sleep before 11 PM'] },
+          { name:'Glass Skin', range:'Week 7–8', focus:'Achieve and Maintain Glow',
+            tasks:['Gua sha or jade roller morning','Maintain Phase 1–2 habits','4-week progress photos','Amla + collagen foods daily','Gut health focus','Abhyanga body oil weekly','SPF non-negotiable'] },
+        ] },
+      codeYouth: { id:'codeYouth', name:'Code Youth', emoji:'🌿', color:'#A8D5BA', tagline:'Anti-Aging Rasayana',
+        desc:'Rasayana therapy from the Vedas. Slow aging, improve cellular health, stay sharp.',
+        phases:[
+          { name:'Cellular Cleanse', range:'Month 1', focus:'Remove Ama · Prep for Rasayana',
+            tasks:['Triphala nightly','16:8 fasting (autophagy at 16h)','Reduce rajasic + tamasic foods','Amla daily','Sleep by 10 PM','Cold water morning rinse','Meditation 10 min daily'] },
+          { name:'Rasayana Loading', range:'Month 2', focus:'Introduce Rasayana Herbs',
+            tasks:['Ashwagandha 500mg with milk nightly','Brahmi 300mg morning','Chyawanprash 1 tsp morning','Shatavari milk 3x weekly','Surya Namaskar + pranayama daily','Abhyanga weekly'] },
+          { name:'Integration', range:'Month 3', focus:'Sustain Ojas — Vital Essence',
+            tasks:['Maintain all Rasayana herbs','Cycle herbs monthly','Monthly body composition check','Screens off 1h before bed','Barefoot earthing 20 min','Seasonal eating'] },
+        ] },
+      codePhysique: { id:'codePhysique', name:'Code Physique', emoji:'💪', color:'#FFB070', tagline:'Body Composition Protocol',
+        desc:'90-day physique transformation. Fat loss + muscle with Vedic recovery stack.',
+        phases:[
+          { name:'Fat Loss', range:'Week 1–4', focus:'Calorie Deficit · Preserve Muscle',
+            tasks:['Calories: bodyweight × 26 kcal','Protein: 1.6–2g per kg bodyweight','Gym 4x: compound movements','Fasted cardio 20 min rest days','Weigh every Monday 7 AM','Track body fat via Navy method weekly','No alcohol'],
+            workout:{ push:['Bench Press 4×8','OHP 3×10','Dips 3×12','Tricep Pushdown 3×15'], pull:['Deadlift 4×5','Pull-ups 4×8','Barbell Row 3×10','Bicep Curl 3×12'], legs:['Squat 4×8','Romanian DL 3×10','Leg Press 3×12','Calf Raise 4×20'] } },
+          { name:'Recomposition', range:'Week 5–8', focus:'Fat Loss + Muscle Gain Together',
+            tasks:['Maintenance calories: bodyweight × 30','Creatine 5g daily','Progressive overload weekly','Ashwagandha + Shatavari for recovery','Sleep 7–9h','Deload at Week 8','Compare photos Week 4 vs 8'] },
+          { name:'Muscle Focus', range:'Week 9–12', focus:'Build Lean Mass · Refine Physique',
+            tasks:['Surplus: bodyweight × 33 kcal','Gym 5x, increase volume','Track all lifts','Post-workout: protein + carb 30 min','Weekly body fat check','Compare to reference physique','Plan maintenance phase'] },
+        ] },
+    };
+
+    /* ── HERBAL DRINKS ───────────────────────────────────────────── */
+    const HERBAL_DRINKS = [
+      { id:1, name:'Agni Water', emoji:'🌿', color:'#A8D5BA',
+        ingredients:'Cumin ½ tsp · Fennel ½ tsp · Ginger 1 slice',
+        prep:'Boil in 400ml water 5 min. Strain. Drink warm.',
+        when:'Morning — 30 min before breakfast',
+        benefits:['Activates digestive fire','Reduces bloating','Improves nutrient absorption'] },
+      { id:2, name:'Ashwagandha Milk', emoji:'🌙', color:'#B8A5E3',
+        ingredients:'Ashwagandha powder 1 tsp · Warm milk 200ml · Honey ½ tsp',
+        prep:'Add to warm (not boiling) milk. Stir well.',
+        when:'Night — 30 min before bed',
+        benefits:['Lowers cortisol','Boosts testosterone naturally','Deep sleep quality'] },
+      { id:3, name:'Amla Shot', emoji:'🫐', color:'#7CC4FF',
+        ingredients:'Amla juice 30ml (or 1 tsp powder) · Water 100ml',
+        prep:'Dilute. Drink immediately on empty stomach.',
+        when:'First thing every morning',
+        benefits:['Highest natural Vitamin C','Hair growth + thickness','Liver detox'] },
+      { id:4, name:'Triphala Water', emoji:'⚗️', color:'#FFB070',
+        ingredients:'Triphala powder ½ tsp · Warm water 200ml',
+        prep:'Dissolve in warm water. Sip slowly.',
+        when:'Night — 2h after last meal',
+        benefits:['Gentle gut cleanse','Removes Ama (toxins)','Regulates digestion'] },
+      { id:5, name:'Neem Tea', emoji:'🍃', color:'#A8D5BA',
+        ingredients:'Dried neem leaves 8–10 (or ¼ tsp powder) · Hot water 200ml',
+        prep:'Steep 5 min. Strain. Drink plain.',
+        when:'Morning empty stomach — max 3x per week',
+        benefits:['Purifies blood','Anti-bacterial + anti-fungal','Clears acne + scalp'] },
+      { id:6, name:'Brahmi Tea', emoji:'🧠', color:'#B8A5E3',
+        ingredients:'Brahmi powder ¼ tsp · Hot water 200ml · Tulsi 2 leaves (optional)',
+        prep:'Steep 3 min. Add honey if needed.',
+        when:'Morning or before focused work',
+        benefits:['Cognitive clarity','Reduces hair-loss cortisol','Calms nervous system'] },
+      { id:7, name:'Turmeric Pepper Milk', emoji:'🟡', color:'#FFB070',
+        ingredients:'Turmeric 1 tsp · Black pepper pinch · Warm milk 200ml · Ghee ¼ tsp',
+        prep:'Heat milk. Add turmeric + pepper. Stir. Add ghee.',
+        when:'Night after dinner',
+        benefits:['Anti-inflammatory post-gym','Joint recovery','Skin glow from inside'] },
+      { id:8, name:'Shatavari Milk', emoji:'🌺', color:'#B8A5E3',
+        ingredients:'Shatavari powder 1 tsp · Warm milk 200ml · Cardamom pinch',
+        prep:'Mix into warm milk. Add cardamom.',
+        when:'Before bed — 3x per week',
+        benefits:['Cellular regeneration','Hormonal balance','Deep muscle recovery'] },
+    ];
+
+    /* ── ASANAS ──────────────────────────────────────────────────── */
+    const ASANAS = [
+      { id:1,  name:'Surya Namaskar',      emoji:'☀️', dur:300, color:'#FFB070', level:'beginner',     benefit:'Full body activation, metabolism + lymph boost' },
+      { id:2,  name:'Warrior II',           emoji:'⚔️', dur:60,  color:'#F4E4C1', level:'beginner',     benefit:'Leg strength, hip opening, mental stamina' },
+      { id:3,  name:'Downward Dog',         emoji:'🐕', dur:60,  color:'#A8D5BA', level:'beginner',     benefit:'Spine decompression, blood to scalp (hair growth)' },
+      { id:4,  name:'Shoulder Stand',       emoji:'🙃', dur:120, color:'#B8A5E3', level:'intermediate', benefit:'Thyroid regulation, blood to follicles, lymph drain' },
+      { id:5,  name:'Seated Forward Bend',  emoji:'🧘', dur:60,  color:'#7CC4FF', level:'beginner',     benefit:'Hamstrings, lower back relief, calm mind' },
+      { id:6,  name:'Triangle Pose',        emoji:'🔺', dur:60,  color:'#A8D5BA', level:'beginner',     benefit:'Side body stretch, digestion, spinal balance' },
+      { id:7,  name:'Cobra Pose',           emoji:'🐍', dur:30,  color:'#FFB070', level:'beginner',     benefit:'Spine strength, chest opening, adrenal health' },
+      { id:8,  name:'Boat Pose',            emoji:'⛵', dur:30,  color:'#F4E4C1', level:'beginner',     benefit:'Core strength, hip flexors, digestive fire' },
+      { id:9,  name:"Child's Pose",         emoji:'🙇', dur:60,  color:'#B8A5E3', level:'beginner',     benefit:'Recovery, lower back relief, nervous system reset' },
+      { id:10, name:'Shavasana',            emoji:'💤', dur:300, color:'#7CC4FF', level:'beginner',     benefit:'Integration, full nervous system + cellular reset' },
+    ];
+
+    /* ── PRANAYAMA ───────────────────────────────────────────────── */
+    const PRANAYAMA = [
+      { id:1, name:'Nadi Shodhana', emoji:'🌬️', dur:600, color:'#B8A5E3',
+        pattern:{ inhale:4, hold:4, exhale:4 },
+        benefit:'Balances left + right brain. Reduces anxiety. Clears nadis.',
+        instruction:'Close right nostril (thumb). Inhale left 4 counts. Close both — hold 4. Open right — exhale 4. Inhale right 4. Close — hold 4. Open left — exhale 4. Repeat for 10 min.' },
+      { id:2, name:'Kapalbhati', emoji:'💨', dur:300, color:'#FFB070',
+        pattern:{ exhale:1, inhale:1 },
+        benefit:'Metabolism boost, lung cleanse, weight loss, lights digestive fire.',
+        instruction:'Forceful sharp exhales through nose. Passive inhale. 60–120 strokes per minute. 5 full minutes.' },
+      { id:3, name:'Bhramari', emoji:'🐝', dur:300, color:'#F4E4C1',
+        pattern:{ inhale:4, hum:8 },
+        benefit:'Immediate stress relief, lowers cortisol, tinnitus relief.',
+        instruction:'Inhale deep. Thumbs on ears, fingers over closed eyes. Exhale with long "mmmm" hum. Feel vibration in skull. 5 min.' },
+      { id:4, name:'Anulom Vilom', emoji:'🔄', dur:600, color:'#A8D5BA',
+        pattern:{ inhale:4, exhale:4 },
+        benefit:'Heart health, blood pressure balance, nervous system harmony.',
+        instruction:'Alternate nostril — no holds. Smooth equal inhale and exhale. Continuous 10 minutes.' },
+      { id:5, name:'Bhastrika', emoji:'🔥', dur:180, color:'#FF7090',
+        pattern:{ inhale:2, exhale:2, pause:10 },
+        benefit:'Energy surge, Agni fire, lung capacity expansion.',
+        instruction:'Forceful inhale AND exhale both. 30 breaths, then hold full inhale 10s. 3 rounds. Skip if BP is high.' },
+    ];
+
+    /* ── PART 2: HOOKS ───────────────────────────────────────────── */
+
+    /* Step counter via DeviceMotionEvent */
+    function useStepCounter() {
+      const todayKey = new Date().toDateString();
+      const [data, setData] = useState(() => {
+        const saved = S.get('steps', { count:0, date:'' });
+        return saved.date === todayKey ? saved : { count:0, date:todayKey };
+      });
+      const lastMag  = useRef(0);
+      const lastTime = useRef(0);
+      const [permDenied, setPermDenied] = useState(false);
+
+      const startListening = useCallback(() => {
+        const handler = e => {
+          const a = e.accelerationIncludingGravity;
+          if (!a || a.x == null) return;
+          const mag = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+          const now = Date.now();
+          if (mag > 11.5 && lastMag.current <= 11.5 && now - lastTime.current > 280) {
+            setData(prev => {
+              const next = { count: prev.count + 1, date: todayKey };
+              S.set('steps', next);
+              return next;
+            });
+            lastTime.current = now;
+          }
+          lastMag.current = mag;
+        };
+        window.addEventListener('devicemotion', handler, { passive:true });
+        return () => window.removeEventListener('devicemotion', handler);
+      }, []);
+
+      useEffect(() => {
+        if (typeof DeviceMotionEvent === 'undefined') return;
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+          // iOS 13+ — caller triggers via requestStepPermission()
+          return;
+        }
+        return startListening();
+      }, []);
+
+      const requestStepPermission = useCallback(() => {
+        if (typeof DeviceMotionEvent?.requestPermission === 'function') {
+          DeviceMotionEvent.requestPermission()
+            .then(r => { if (r === 'granted') startListening(); else setPermDenied(true); })
+            .catch(() => setPermDenied(true));
+        }
+      }, [startListening]);
+
+      return {
+        steps:    data.count,
+        calories: Math.round(data.count * 0.04),
+        km:       parseFloat((data.count * 0.0008).toFixed(2)),
+        permDenied,
+        requestStepPermission,
+      };
+    }
+
+    /* Countdown / count-up timer */
+    function useTimer(initialSeconds = 0, countDown = false) {
+      const [elapsed, setElapsed]   = useState(initialSeconds);
+      const [running, setRunning]   = useState(false);
+      const intervalRef = useRef(null);
+
+      useEffect(() => {
+        if (!running) { clearInterval(intervalRef.current); return; }
+        intervalRef.current = setInterval(() => {
+          setElapsed(prev => {
+            if (countDown && prev <= 0) { setRunning(false); return 0; }
+            return countDown ? prev - 1 : prev + 1;
+          });
+        }, 1000);
+        return () => clearInterval(intervalRef.current);
+      }, [running, countDown]);
+
+      const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+      return {
+        elapsed, running,
+        display: fmt(elapsed),
+        toggle:  () => setRunning(r => !r),
+        reset:   (v = initialSeconds) => { setRunning(false); setElapsed(v); },
+        setElapsed,
+      };
+    }
+
+    /* Voice recognition — Web Speech API */
+    function useSpeech() {
+      const [transcript, setTranscript] = useState('');
+      const [listening,  setListening]  = useState(false);
+      const [supported,  setSupported]  = useState(false);
+      const recRef = useRef(null);
+
+      useEffect(() => {
+        setSupported(!!(window.SpeechRecognition || window.webkitSpeechRecognition));
+      }, []);
+
+      const start = useCallback(() => {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) return;
+        const rec = new SR();
+        rec.lang = 'en-IN';
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.onresult = e => { setTranscript(e.results[0][0].transcript); setListening(false); };
+        rec.onerror  = ()  => setListening(false);
+        rec.onend    = ()  => setListening(false);
+        recRef.current = rec;
+        rec.start();
+        setListening(true);
+      }, []);
+
+      const stop = useCallback(() => {
+        recRef.current?.stop();
+        setListening(false);
+      }, []);
+
+      return { transcript, listening, supported, start, stop, setTranscript };
+    }
+
+    /* Body fat — Navy method (male) */
+    const calcBodyFat = (height_cm, waist_cm, neck_cm) => {
+      if (!height_cm || !waist_cm || !neck_cm || waist_cm <= neck_cm) return null;
+      const bf = 86.010 * Math.log10(waist_cm - neck_cm) - 70.041 * Math.log10(height_cm) + 36.76;
+      return parseFloat(Math.max(3, Math.min(50, bf)).toFixed(1));
+    };
+
+    const calcTimeline = (currentBF, targetBF) => {
+      const diff = Math.max(0, currentBF - targetBF);
+      return { weeks_fast: Math.ceil(diff / 1.0), weeks_safe: Math.ceil(diff / 0.5) };
+    };
+
+    /* ── PART 2: SHARED COMPONENTS ───────────────────────────────── */
+
+    function Icon({ name, size=18, strokeWidth=1.5, style={}, className='' }) {
+      const C = LR[name];
+      if (!C) return <span style={{ display:'inline-block', width:size, height:size, ...style }} className={className}/>;
+      return <C size={size} strokeWidth={strokeWidth} style={style} className={className}/>;
+    }
+
+    function GlassCard({ children, className='', strong=false, style={}, onClick }) {
+      return (
+        <div
+          onClick={onClick}
+          className={`relative ${strong ? 'glass' : 'glass-flat'} ${className}`}
+          style={style}
+        >
+          {children}
+        </div>
+      );
+    }
+
+    function Tag({ children, color='#F4E4C1', bg }) {
+      return (
+        <span className="tag" style={{
+          color,
+          borderColor: color + '40',
+          background: bg || color + '18',
+          fontSize: 10,
+        }}>
+          {children}
+        </span>
+      );
+    }
+
+    function SectionLabel({ children, action }) {
+      return (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 20px 8px' }}>
+          <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)', fontWeight:500 }}>
+            {children}
+          </div>
+          {action}
+        </div>
+      );
+    }
+
+    function MiniLineChart({ data=[], height=50, color='#F4E4C1', filled=false }) {
+      if (!data.length) return null;
+      const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+      const pts = data.map((v,i) => {
+        const x = (i/(data.length-1)) * 100;
+        const y = 100 - ((v-min)/range) * 90 - 5;
+        return `${x},${y}`;
+      }).join(' ');
+      const fillPts = `0,100 ${pts} 100,100`;
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width:'100%', height, display:'block' }}>
+          {filled && <polygon points={fillPts} fill={color} opacity="0.08"/>}
+          <polyline points={pts} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+          <polyline points={pts} fill="none" stroke={color} strokeWidth="5" vectorEffect="non-scaling-stroke" opacity="0.08"/>
+        </svg>
+      );
+    }
+
+    function ProgressBar({ value, max, color='#F4E4C1', height=6 }) {
+      const pct = Math.min(100, Math.max(0, (value / max) * 100));
+      return (
+        <div className="bar-track" style={{ height }}>
+          <div className="bar-fill" style={{ width:`${pct}%`, background:`linear-gradient(90deg,${color}99,${color})` }}/>
+        </div>
+      );
+    }
+
+    function CircleProgress({ pct=0, size=72, stroke=5, color='#F4E4C1', children }) {
+      const r = (size - stroke) / 2;
+      const circ = 2 * Math.PI * r;
+      const offset = circ - (pct / 100) * circ;
+      return (
+        <div style={{ position:'relative', width:size, height:size, flexShrink:0 }}>
+          <svg width={size} height={size} style={{ transform:'rotate(-90deg)' }}>
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--border-soft)" strokeWidth={stroke}/>
+            <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+              strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+              style={{ transition:'stroke-dashoffset .5s ease' }}/>
+          </svg>
+          <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function Chip({ label, active, color='#F4E4C1', onClick }) {
+      return (
+        <button onClick={onClick} style={{
+          flexShrink:0, padding:'6px 14px', borderRadius:999,
+          fontSize:12, fontWeight:500, cursor:'pointer',
+          border:`0.5px solid ${active ? color+'60' : 'var(--border-soft)'}`,
+          background: active ? color+'20' : 'var(--bg-card)',
+          color: active ? color : 'var(--text-dim)',
+          transition:'all .2s',
+        }}>
+          {label}
+        </button>
+      );
+    }
+
+    function ModalSheet({ open, onClose, title, children }) {
+      if (!open) return null;
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="modal-sheet pop-in" onClick={e => e.stopPropagation()}>
+            <div style={{ padding:'16px 20px 0', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)' }}>{title}</div>
+              <button onClick={onClose} style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:999, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <Icon name="X" size={14} style={{ color:'var(--text-dim)' }}/>
+              </button>
+            </div>
+            <div style={{ padding:'16px 20px 32px' }}>{children}</div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PART 3: HOME SCREEN ─────────────────────────────────────── */
+
+    function SomaCard({ onLog }) {
+      const [battle, setBattle] = useState(() => S.get('soma_battle', 0.5));
+      const [dawn,   setDawn]   = useState(() => S.get('soma_dawn',   0.5));
+      const result = useMemo(() => SomaEngine.calculate(battle, dawn), [battle, dawn]);
+
+      const save = (b, d) => { S.set('soma_battle', b); S.set('soma_dawn', d); };
+
+      return (
+        <GlassCard strong className="grain-overlay" style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Soma Protocol</div>
+              <div className="serif" style={{ fontSize:26, lineHeight:1.1, marginTop:4, color: result.color }}>
+                {result.emoji} {result.protocolType}
+              </div>
+            </div>
+            <CircleProgress pct={result.somaRequirement * 100} size={64} color={result.color}>
+              <span style={{ fontSize:13, fontWeight:600, color: result.color }}>{Math.round(result.somaRequirement * 100)}</span>
+            </CircleProgress>
+          </div>
+
+          <div style={{ fontSize:12, color:'var(--text-dim)', lineHeight:1.5, marginBottom:16 }}>
+            {result.description}
+          </div>
+
+          <div style={{ marginBottom:10 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-dim)', marginBottom:6 }}>
+              <span>Battle Intensity</span>
+              <span style={{ color:'var(--gold)' }}>{Math.round(battle * 10)}/10</span>
+            </div>
+            <input type="range" className="eg" min="0" max="1" step="0.1" value={battle}
+              onChange={e => { const v=parseFloat(e.target.value); setBattle(v); save(v, dawn); }}
+              style={{ background:`linear-gradient(90deg,var(--red) ${battle*100}%,var(--border) ${battle*100}%)` }}/>
+          </div>
+
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-dim)', marginBottom:6 }}>
+              <span>Dawn Clarity</span>
+              <span style={{ color:'var(--gold)' }}>{Math.round(dawn * 10)}/10</span>
+            </div>
+            <input type="range" className="eg" min="0" max="1" step="0.1" value={dawn}
+              onChange={e => { const v=parseFloat(e.target.value); setDawn(v); save(battle, v); }}
+              style={{ background:`linear-gradient(90deg,var(--purple) ${dawn*100}%,var(--border) ${dawn*100}%)` }}/>
+          </div>
+        </GlassCard>
+      );
+    }
+
+    function SleepCard() {
+      const [sleep, setSleep] = useState(() => S.get('sleep', {
+        bedtime:'22:30', wake:'05:30', quality:78, deep:1.8, rem:1.9, light:3.2,
+        history:[6.5,7.1,6.8,7.4,7.2,6.9,7.2],
+      }));
+      const [editing, setEditing] = useState(false);
+
+      const totalH = useMemo(() => {
+        try {
+          const [bh,bm] = sleep.bedtime.split(':').map(Number);
+          const [wh,wm] = sleep.wake.split(':').map(Number);
+          let mins = (wh*60+wm) - (bh*60+bm);
+          if (mins < 0) mins += 1440;
+          return parseFloat((mins/60).toFixed(1));
+        } catch { return 7.0; }
+      }, [sleep.bedtime, sleep.wake]);
+
+      const save = d => { setSleep(d); S.set('sleep', d); };
+
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Last Night</div>
+              <div className="serif" style={{ fontSize:32, lineHeight:1, marginTop:4 }}>{totalH}h</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Quality</div>
+              <div className="serif" style={{ fontSize:28, lineHeight:1, marginTop:4, color: sleep.quality>75?'var(--green)':'var(--gold)' }}>
+                {sleep.quality}%
+              </div>
+            </div>
+          </div>
+
+          {editing ? (
+            <div style={{ display:'flex', gap:12, marginBottom:12 }}>
+              {[['Bedtime','bedtime'],['Wake','wake']].map(([label,key]) => (
+                <div key={key} style={{ flex:1 }}>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:4 }}>{label}</div>
+                  <input type="time" value={sleep[key]}
+                    onChange={e => save({ ...sleep, [key]: e.target.value })}
+                    style={{ width:'100%', background:'var(--bg-card)', border:'0.5px solid var(--border)', borderRadius:10, padding:'8px 10px', color:'var(--text)', fontSize:14 }}/>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+              {[['🌙 Bed', sleep.bedtime],['☀️ Wake', sleep.wake]].map(([l,v]) => (
+                <div key={l} onClick={() => setEditing(true)} style={{ flex:1, background:'var(--bg-card)', borderRadius:10, padding:'8px 10px', cursor:'pointer' }}>
+                  <div style={{ fontSize:10, color:'var(--text-faint)' }}>{l}</div>
+                  <div style={{ fontSize:15, fontWeight:500, marginTop:2 }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {[['Deep',sleep.deep,'#7CC4FF'],['REM',sleep.rem,'#B8A5E3'],['Light',sleep.light,'#A8D5BA']].map(([l,v,c]) => (
+            <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+              <div style={{ fontSize:9, textTransform:'uppercase', width:36, color:'var(--text-faint)' }}>{l}</div>
+              <div style={{ flex:1 }}><ProgressBar value={v} max={totalH||7} color={c}/></div>
+              <div style={{ fontSize:10, color:'var(--text-faint)', width:28, textAlign:'right' }}>{v}h</div>
+            </div>
+          ))}
+
+          <div style={{ marginTop:12, paddingTop:12, borderTop:'0.5px solid var(--border-soft)' }}>
+            <div style={{ fontSize:9, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)', marginBottom:6 }}>7-Day Trend</div>
+            <MiniLineChart data={sleep.history} height={40} color="#B8A5E3" filled/>
+          </div>
+
+          {editing && (
+            <button onClick={() => setEditing(false)} style={{ marginTop:12, width:'100%', padding:'10px', borderRadius:12, background:'var(--gold)', color:'#1a0f00', fontWeight:600, fontSize:13, border:'none', cursor:'pointer' }}>
+              Save Sleep
+            </button>
+          )}
+        </GlassCard>
+      );
+    }
+
+    function StepsCard({ stepData }) {
+      const { steps, calories, km, permDenied, requestStepPermission } = stepData;
+      const goal = 8000;
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Steps Today</div>
+              <div className="serif" style={{ fontSize:34, lineHeight:1, marginTop:4, color:'var(--orange)' }}>
+                {steps.toLocaleString()}
+              </div>
+            </div>
+            <div style={{ textAlign:'right', display:'flex', flexDirection:'column', gap:4 }}>
+              <Tag color="var(--orange)">{calories} kcal</Tag>
+              <Tag color="var(--blue)">{km} km</Tag>
+            </div>
+          </div>
+          <ProgressBar value={steps} max={goal} color="var(--orange)"/>
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:6 }}>
+            <span>0</span>
+            <span>Goal: {goal.toLocaleString()}</span>
+          </div>
+          {!steps && !permDenied && (
+            <button onClick={requestStepPermission} style={{ marginTop:12, width:'100%', padding:'9px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--orange)', fontSize:12, cursor:'pointer' }}>
+              Enable motion sensor →
+            </button>
+          )}
+          {permDenied && <div style={{ marginTop:8, fontSize:11, color:'var(--text-faint)', textAlign:'center' }}>Motion access denied. Enable in phone Settings.</div>}
+        </GlassCard>
+      );
+    }
+
+    function WaterCard() {
+      const [w, setW] = useState(() => S.get('water', { glasses:0, goal:8 }));
+      const add = () => { const n={...w, glasses:Math.min(w.goal+2,w.glasses+1)}; setW(n); S.set('water',n); };
+      const remove = () => { const n={...w, glasses:Math.max(0,w.glasses-1)}; setW(n); S.set('water',n); };
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Water</div>
+              <div style={{ fontSize:22, fontWeight:500, marginTop:4 }}>
+                <span style={{ color:'var(--blue)' }}>{w.glasses}</span>
+                <span style={{ color:'var(--text-faint)', fontSize:14 }}> / {w.goal} glasses</span>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={remove} style={{ width:36, height:36, borderRadius:999, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text-dim)', fontSize:18, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>−</button>
+              <button onClick={add} style={{ width:36, height:36, borderRadius:999, background:'linear-gradient(135deg,var(--blue),#3B82F6)', color:'#fff', fontSize:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', border:'none' }}>+</button>
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:5 }}>
+            {Array.from({length:w.goal}).map((_,i) => (
+              <div key={i} onClick={() => { const n={...w,glasses:i+1}; setW(n); S.set('water',n); }}
+                style={{ flex:1, height:28, borderRadius:6, cursor:'pointer',
+                  background: i<w.glasses ? 'linear-gradient(180deg,#7CC4FF,#3B82F6)' : 'var(--bg-card)',
+                  border:'0.5px solid var(--border-soft)', transition:'background .2s' }}/>
+            ))}
+          </div>
+        </GlassCard>
+      );
+    }
+
+    function FastingCard() {
+      const [f, setF] = useState(() => {
+        const saved = S.get('fasting', { active:false, start:null });
+        return saved;
+      });
+      const [now, setNow] = useState(Date.now());
+      const target = 16 * 3600000;
+
+      useEffect(() => {
+        if (!f.active) return;
+        const t = setInterval(() => setNow(Date.now()), 10000);
+        return () => clearInterval(t);
+      }, [f.active]);
+
+      const elapsed = f.active && f.start ? Math.max(0, now - f.start) : 0;
+      const pct = Math.min(100, (elapsed / target) * 100);
+      const hh = Math.floor(elapsed / 3600000);
+      const mm = Math.floor((elapsed % 3600000) / 60000);
+
+      const toggle = () => {
+        const n = f.active ? { active:false, start:null } : { active:true, start:Date.now() };
+        setF(n); S.set('fasting', n);
+      };
+
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Intermittent Fast</div>
+              <div className="serif" style={{ fontSize:28, lineHeight:1, marginTop:4, color: elapsed>=target?'var(--green)':'var(--gold)' }}>
+                {hh}h {String(mm).padStart(2,'0')}m
+              </div>
+            </div>
+            <button onClick={toggle} style={{
+              padding:'8px 16px', borderRadius:999, fontSize:12, fontWeight:500, cursor:'pointer', border:'none',
+              background: f.active ? 'rgba(244,228,193,0.2)' : 'linear-gradient(135deg,var(--gold),var(--gold-deep))',
+              color: f.active ? 'var(--gold)' : '#1a0f00',
+            }}>
+              {f.active ? '⏸ Eating' : '▶ Fast'}
+            </button>
+          </div>
+          <ProgressBar value={elapsed} max={target} color={elapsed>=target?'var(--green)':'var(--gold)'}/>
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:6 }}>
+            <span>0h</span>
+            <span>16h target {elapsed>=target?'✓ Done!':''}</span>
+          </div>
+        </GlassCard>
+      );
+    }
+
+    function GlucoseCard() {
+      const [g, setG] = useState(() => S.get('glucose', {
+        current:94, history:[95,102,110,105,98,94,92],
+        meals:[{name:'Moong Dal',val:94,time:'2h ago'},{name:'Chai',val:102,time:'4h ago'},{name:'Almonds',val:92,time:'6h ago'}],
+      }));
+      const col = v => v<100?'var(--green)':v<130?'var(--gold)':'var(--red)';
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Glucose</div>
+              <div className="serif" style={{ fontSize:32, lineHeight:1, marginTop:4, color:col(g.current) }}>{g.current} mg/dL</div>
+            </div>
+            <Tag color={col(g.current)}>{g.current<100?'Stable':g.current<130?'Watch':'High'}</Tag>
+          </div>
+          <div style={{ marginBottom:12 }}>
+            {g.meals.map((m,i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 0', borderBottom: i<g.meals.length-1?'0.5px solid var(--border-soft)':'none' }}>
+                <span style={{ fontSize:12 }}>{m.name}</span>
+                <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                  <span style={{ fontSize:10, color:'var(--text-faint)' }}>{m.time}</span>
+                  <span style={{ fontSize:12, fontWeight:600, color:col(m.val) }}>{m.val}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <MiniLineChart data={g.history} height={36} color="var(--blue)" filled/>
+        </GlassCard>
+      );
+    }
+
+    function WeightCard() {
+      const [wt, setWt] = useState(() => S.get('weight', {
+        current:81.2, target:75, start:84.5,
+        history:[84.5,83.8,83.2,82.5,81.8,81.5,81.2],
+      }));
+      const [editing, setEditing] = useState(false);
+      const [input, setInput] = useState('');
+
+      const change = wt.current - wt.start;
+      const pct = Math.abs(change / wt.start * 100);
+
+      const logWeight = () => {
+        const v = parseFloat(input);
+        if (!v || v < 30 || v > 250) return;
+        const n = { ...wt, current:v, history:[...wt.history.slice(-6), v] };
+        setWt(n); S.set('weight', n); setEditing(false); setInput('');
+      };
+
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Body Weight</div>
+              <div className="serif" style={{ fontSize:34, lineHeight:1, marginTop:4 }}>{wt.current} kg</div>
+              <div style={{ fontSize:12, color: change<=0?'var(--green)':'var(--red)', marginTop:4 }}>
+                {change>0?'+':''}{change.toFixed(1)} kg ({pct.toFixed(1)}%)
+              </div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:10, color:'var(--text-faint)' }}>Target</div>
+              <div className="serif" style={{ fontSize:22, color:'var(--text-dim)', marginTop:4 }}>{wt.target} kg</div>
+              <button onClick={() => setEditing(v => !v)} style={{ marginTop:6, fontSize:11, color:'var(--gold)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>
+                Log weight
+              </button>
+            </div>
+          </div>
+
+          <ProgressBar value={wt.start - wt.current} max={wt.start - wt.target} color="var(--orange)"/>
+
+          {editing && (
+            <div style={{ marginTop:12, display:'flex', gap:8 }}>
+              <input type="number" value={input} onChange={e => setInput(e.target.value)}
+                placeholder="e.g. 80.5" step="0.1"
+                style={{ flex:1, padding:'10px 12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:14 }}/>
+              <button onClick={logWeight} style={{ padding:'10px 16px', borderRadius:12, background:'var(--gold)', color:'#1a0f00', fontWeight:600, fontSize:13, border:'none', cursor:'pointer' }}>
+                Save
+              </button>
+            </div>
+          )}
+
+          <div style={{ marginTop:12, paddingTop:12, borderTop:'0.5px solid var(--border-soft)' }}>
+            <MiniLineChart data={wt.history} height={40} color="var(--orange)" filled/>
+          </div>
+        </GlassCard>
+      );
+    }
+
+    function HomeScreen({ stepData }) {
+      const day = S.get('startDay', null);
+      const startDay = day ? new Date(day) : new Date();
+      if (!day) S.set('startDay', startDay.toISOString());
+      const dayNum = Math.min(90, Math.max(1, Math.floor((Date.now() - startDay) / 86400000) + 1));
+
+      const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+      const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()];
+
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          {/* Header */}
+          <div className="safe-t" style={{ padding:'0 20px 0', paddingTop:'max(16px, env(safe-area-inset-top))' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', paddingTop:8 }}>
+              <div>
+                <div style={{ fontSize:12, color:'var(--text-faint)' }}>{dow}, {new Date().getDate()} {mon}</div>
+                <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>
+                  Good morning
+                </div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.15em', color:'var(--text-faint)' }}>Day</div>
+                <div className="serif" style={{ fontSize:32, lineHeight:1 }}>
+                  {dayNum}<span style={{ color:'var(--text-faint)', fontSize:18 }}>/90</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ padding:'16px 20px 0' }}>
+            <SomaCard/>
+            <SleepCard/>
+            <StepsCard stepData={stepData}/>
+            <WaterCard/>
+            <FastingCard/>
+            <GlucoseCard/>
+            <WeightCard/>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PART 4: PROTOCOLS SCREEN ────────────────────────────────── */
+
+    function PhaseCard({ phase, protocolId, phaseIndex }) {
+      const key = `tasks_${protocolId}_${phaseIndex}`;
+      const [done, setDone] = useState(() => S.get(key, []));
+
+      const toggle = task => {
+        const next = done.includes(task) ? done.filter(t => t !== task) : [...done, task];
+        setDone(next);
+        S.set(key, next);
+      };
+
+      return (
+        <GlassCard style={{ padding:20, marginBottom:12 }}>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>{phase.range}</div>
+            <div className="serif" style={{ fontSize:22, lineHeight:1.1, marginTop:4 }}>{phase.name}</div>
+            <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:4 }}>{phase.focus}</div>
+          </div>
+
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-faint)', marginBottom:10 }}>
+            <span>Tasks</span>
+            <span>{done.length}/{phase.tasks.length} done</span>
+          </div>
+          <ProgressBar value={done.length} max={phase.tasks.length} color="var(--gold)"/>
+
+          <div style={{ marginTop:14, display:'flex', flexDirection:'column', gap:8 }}>
+            {phase.tasks.map((task, i) => {
+              const isDone = done.includes(task);
+              return (
+                <button key={i} onClick={() => toggle(task)} style={{
+                  display:'flex', alignItems:'flex-start', gap:10,
+                  background: isDone ? 'rgba(168,213,186,0.10)' : 'var(--bg-card)',
+                  border:`0.5px solid ${isDone ? 'rgba(168,213,186,0.3)' : 'var(--border-soft)'}`,
+                  borderRadius:12, padding:'10px 12px', cursor:'pointer', textAlign:'left',
+                  transition:'all .2s',
+                }}>
+                  <div style={{
+                    width:18, height:18, borderRadius:999, flexShrink:0, marginTop:1,
+                    background: isDone ? 'var(--green)' : 'transparent',
+                    border:`1.5px solid ${isDone ? 'var(--green)' : 'var(--border)'}`,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                  }}>
+                    {isDone && <Icon name="Check" size={10} style={{ color:'#1a3d2b' }}/>}
+                  </div>
+                  <span style={{ fontSize:13, color: isDone ? 'var(--text-dim)' : 'var(--text)', lineHeight:1.4,
+                    textDecoration: isDone ? 'line-through' : 'none' }}>
+                    {task}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {phase.workout && (
+            <div style={{ marginTop:16, paddingTop:14, borderTop:'0.5px solid var(--border-soft)' }}>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)', marginBottom:10 }}>Weekly Workout Split</div>
+              {[['Push 💪', phase.workout.push], ['Pull 🏋️', phase.workout.pull], ['Legs 🦵', phase.workout.legs]].map(([label, exercises]) => (
+                <div key={label} style={{ marginBottom:10 }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:'var(--orange)', marginBottom:6 }}>{label}</div>
+                  {exercises.map((ex, i) => (
+                    <div key={i} style={{ fontSize:12, color:'var(--text-dim)', padding:'4px 0',
+                      borderBottom:'0.5px solid var(--border-soft)' }}>{ex}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      );
+    }
+
+    function ProtocolDetail({ protocol, onBack }) {
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <button onClick={onBack} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', color:'var(--text-dim)', fontSize:13, marginBottom:16, paddingTop:8 }}>
+              <Icon name="ChevronLeft" size={16} style={{ color:'var(--text-dim)' }}/> All Protocols
+            </button>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:6 }}>
+              <span style={{ fontSize:36 }}>{protocol.emoji}</span>
+              <div>
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>{protocol.tagline}</div>
+                <div className="serif" style={{ fontSize:28, lineHeight:1.1, color: protocol.color }}>{protocol.name}</div>
+              </div>
+            </div>
+            <div style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.6, marginBottom:20 }}>{protocol.desc}</div>
+          </div>
+
+          <div style={{ padding:'0 20px' }}>
+            {protocol.phases.map((phase, i) => (
+              <PhaseCard key={i} phase={phase} protocolId={protocol.id} phaseIndex={i}/>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ProtocolsScreen() {
+      const [active, setActive] = useState(null);
+
+      if (active) return <ProtocolDetail protocol={PROTOCOLS[active]} onBack={() => setActive(null)}/>;
+
+      const list = Object.values(PROTOCOLS);
+
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <div style={{ paddingTop:8, marginBottom:6 }}>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Your Protocols</div>
+              <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>Code Library</div>
+            </div>
+            <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:20, lineHeight:1.5 }}>
+              5 active protocols. Tap to open, track tasks, see your workout splits.
+            </div>
+          </div>
+
+          <div style={{ padding:'0 20px' }}>
+            {list.map(proto => {
+              const totalTasks = proto.phases.reduce((a,p) => a + p.tasks.length, 0);
+              const doneTasks  = proto.phases.reduce((a,p,pi) => {
+                const d = S.get(`tasks_${proto.id}_${pi}`, []);
+                return a + d.length;
+              }, 0);
+              const pct = Math.round((doneTasks / totalTasks) * 100);
+
+              return (
+                <button key={proto.id} onClick={() => setActive(proto.id)} style={{
+                  width:'100%', marginBottom:12, background:'none', border:'none', cursor:'pointer', textAlign:'left',
+                }}>
+                  <GlassCard strong style={{ padding:20 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
+                      <div style={{ width:52, height:52, borderRadius:16, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26,
+                        background:`linear-gradient(135deg,${proto.color}22,${proto.color}08)`,
+                        border:`0.5px solid ${proto.color}40` }}>
+                        {proto.emoji}
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>{proto.tagline}</div>
+                        <div className="serif" style={{ fontSize:22, lineHeight:1.1, marginTop:3, color: proto.color }}>{proto.name}</div>
+                      </div>
+                      <Icon name="ChevronRight" size={16} style={{ color:'var(--text-faint)' }}/>
+                    </div>
+
+                    <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:14, lineHeight:1.5 }}>{proto.desc}</div>
+
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-faint)', marginBottom:8 }}>
+                      <span>{proto.phases.length} phases · {totalTasks} tasks</span>
+                      <span style={{ color: proto.color }}>{doneTasks}/{totalTasks} done · {pct}%</span>
+                    </div>
+                    <ProgressBar value={doneTasks} max={totalTasks} color={proto.color}/>
+
+                    <div className="h-pills" style={{ marginTop:12 }}>
+                      {proto.phases.map((p,i) => (
+                        <div key={i} style={{ flexShrink:0, padding:'4px 10px', borderRadius:999,
+                          fontSize:10, fontWeight:500,
+                          background:`${proto.color}18`,
+                          border:`0.5px solid ${proto.color}40`,
+                          color: proto.color }}>
+                          {p.name}
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PART 5: FOOD SCREEN ─────────────────────────────────────── */
+
+    const todayKey = () => new Date().toISOString().slice(0,10);
+
+    function fuzzyMatch(query, name) {
+      const q = query.toLowerCase().trim();
+      const n = name.toLowerCase();
+      if (!q) return true;
+      if (n.includes(q)) return true;
+      return q.split('').every(c => n.includes(c));
+    }
+
+    function AddFoodModal({ open, onClose, onAdd }) {
+      const [mode, setMode]         = useState('text');
+      const [query, setQuery]       = useState('');
+      const [results, setResults]   = useState([]);
+      const [selected, setSelected] = useState(null);
+      const [qty, setQty]           = useState(1);
+      const [time, setTime]         = useState(() => new Date().toTimeString().slice(0,5));
+      const [photoNote, setPhotoNote] = useState('');
+      const speech = useSpeech();
+      const cameraRef = useRef(null);
+      const galleryRef = useRef(null);
+
+      useEffect(() => {
+        if (!query) { setResults([]); return; }
+        setResults(FOOD_DB.filter(f => fuzzyMatch(query, f.name)).slice(0, 8));
+      }, [query]);
+
+      useEffect(() => {
+        if (speech.transcript) {
+          setQuery(speech.transcript);
+          setMode('text');
+          speech.setTranscript('');
+        }
+      }, [speech.transcript]);
+
+      const handlePhoto = e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPhotoNote('');
+          setMode('photo-review');
+          setSelected({ _photo: reader.result, name:'', cal:0, p:0, c:0, f:0, iron:0, k:0, zn:0, mg:0 });
+        };
+        reader.readAsDataURL(file);
+      };
+
+      const confirmAdd = () => {
+        if (!selected) return;
+        const entry = {
+          id: Date.now(),
+          name: selected.name || photoNote || 'Photo meal',
+          time,
+          qty,
+          cal:  Math.round((selected.cal  || 0) * qty),
+          p:    parseFloat(((selected.p   || 0) * qty).toFixed(1)),
+          c:    parseFloat(((selected.c   || 0) * qty).toFixed(1)),
+          f:    parseFloat(((selected.f   || 0) * qty).toFixed(1)),
+          iron: parseFloat(((selected.iron|| 0) * qty).toFixed(1)),
+          k:    Math.round((selected.k    || 0) * qty),
+          zn:   parseFloat(((selected.zn  || 0) * qty).toFixed(1)),
+          mg:   Math.round((selected.mg   || 0) * qty),
+          photo: selected._photo || null,
+          foodId: selected.id || null,
+        };
+        onAdd(entry);
+        setQuery(''); setSelected(null); setQty(1); setMode('text'); setPhotoNote('');
+        onClose();
+      };
+
+      if (!open) return null;
+
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="modal-sheet pop-in" style={{ maxHeight:'88dvh' }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding:'16px 20px 0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)' }}>Log Food</div>
+              <button onClick={onClose} style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:999, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <Icon name="X" size={14} style={{ color:'var(--text-dim)' }}/>
+              </button>
+            </div>
+
+            {/* Mode selector */}
+            <div className="h-pills" style={{ padding:'14px 20px 0' }}>
+              {[['text','Search','Search'],['camera','Camera','Camera'],['gallery','Gallery','Image'],['voice','Voice','Mic']].map(([m,label,icon]) => (
+                <button key={m} onClick={() => { setMode(m); if(m==='camera') cameraRef.current?.click(); if(m==='gallery') galleryRef.current?.click(); if(m==='voice') speech.start(); }}
+                  style={{ flexShrink:0, padding:'7px 14px', borderRadius:999, fontSize:12, fontWeight:500, cursor:'pointer',
+                    background: mode===m ? 'var(--gold)' : 'var(--bg-card)',
+                    color: mode===m ? '#1a0f00' : 'var(--text-dim)',
+                    border:`0.5px solid ${mode===m ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Hidden file inputs */}
+            <input ref={cameraRef}  type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={handlePhoto}/>
+            <input ref={galleryRef} type="file" accept="image/*"                       style={{ display:'none' }} onChange={handlePhoto}/>
+
+            <div style={{ padding:'14px 20px 32px' }}>
+              {/* Voice listening indicator */}
+              {speech.listening && (
+                <div style={{ textAlign:'center', padding:'20px 0', color:'var(--red)' }}>
+                  <div className="mic-live" style={{ width:56, height:56, borderRadius:999, background:'rgba(255,112,144,0.15)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px' }}>
+                    <Icon name="Mic" size={24} style={{ color:'var(--red)' }}/>
+                  </div>
+                  <div style={{ fontSize:13, color:'var(--text-dim)' }}>Listening… say what you ate</div>
+                </div>
+              )}
+
+              {/* Photo review */}
+              {mode === 'photo-review' && selected?._photo && (
+                <div>
+                  <img src={selected._photo} alt="meal" style={{ width:'100%', borderRadius:16, maxHeight:200, objectFit:'cover', marginBottom:12 }}/>
+                  <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:8 }}>What did you eat? Search below to match nutrients.</div>
+                  <input value={photoNote} onChange={e => { setPhotoNote(e.target.value); setQuery(e.target.value); setMode('text'); }}
+                    placeholder="e.g. Dal rice, paneer sabzi…"
+                    style={{ width:'100%', padding:'10px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:14, marginBottom:8 }}/>
+                </div>
+              )}
+
+              {/* Text search */}
+              {(mode === 'text' || mode === 'photo-review') && !speech.listening && (
+                <div>
+                  {mode === 'text' && (
+                    <input value={query} onChange={e => setQuery(e.target.value)} autoFocus
+                      placeholder="Search food… e.g. moong dal, eggs"
+                      style={{ width:'100%', padding:'12px 14px', borderRadius:14, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:14, marginBottom:10 }}/>
+                  )}
+
+                  {results.length > 0 && !selected && (
+                    <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:10 }}>
+                      {results.map(f => (
+                        <button key={f.id} onClick={() => { setSelected(f); setQuery(f.name); setResults([]); }}
+                          style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', cursor:'pointer', textAlign:'left' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <span style={{ fontSize:20 }}>{f.emoji}</span>
+                            <div>
+                              <div style={{ fontSize:13, color:'var(--text)' }}>{f.name}</div>
+                              <div style={{ fontSize:10, color:'var(--text-faint)' }}>Fe {f.iron}mg · Zn {f.zn}mg · Mg {f.mg}mg</div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize:12, color:'var(--orange)', fontWeight:500 }}>{f.cal} kcal</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {selected && (
+                    <div>
+                      {/* Selected food card */}
+                      <div style={{ padding:'12px 14px', borderRadius:14, background:'rgba(168,213,186,0.08)', border:'0.5px solid rgba(168,213,186,0.3)', marginBottom:14 }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                          <div style={{ fontSize:14, fontWeight:500 }}>{selected.emoji} {selected.name || photoNote}</div>
+                          <button onClick={() => { setSelected(null); setQuery(''); }} style={{ fontSize:11, color:'var(--text-faint)', background:'none', border:'none', cursor:'pointer' }}>change</button>
+                        </div>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, textAlign:'center' }}>
+                          {[['Kcal',selected.cal],['Protein',`${selected.p}g`],['Carbs',`${selected.c}g`],['Fat',`${selected.f}g`]].map(([l,v]) => (
+                            <div key={l}>
+                              <div style={{ fontSize:9, color:'var(--text-faint)', textTransform:'uppercase' }}>{l}</div>
+                              <div style={{ fontSize:15, fontWeight:600, marginTop:2, color:'var(--gold)' }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginTop:8, textAlign:'center' }}>
+                          {[['Iron',`${selected.iron}mg`,'var(--red)'],['K',`${selected.k}mg`,'var(--orange)'],['Zn',`${selected.zn}mg`,'var(--blue)'],['Mg',`${selected.mg}mg`,'var(--purple)']].map(([l,v,c]) => (
+                            <div key={l}>
+                              <div style={{ fontSize:9, color:'var(--text-faint)' }}>{l}</div>
+                              <div style={{ fontSize:12, color:c, marginTop:1 }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Qty + Time */}
+                      <div style={{ display:'flex', gap:10, marginBottom:14 }}>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:6 }}>Servings</div>
+                          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <button onClick={() => setQty(q => Math.max(0.5, q-0.5))} style={{ width:32, height:32, borderRadius:999, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:18, cursor:'pointer' }}>−</button>
+                            <span style={{ fontSize:16, fontWeight:600, minWidth:28, textAlign:'center' }}>{qty}</span>
+                            <button onClick={() => setQty(q => q+0.5)} style={{ width:32, height:32, borderRadius:999, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:18, cursor:'pointer' }}>+</button>
+                          </div>
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:6 }}>Time</div>
+                          <input type="time" value={time} onChange={e => setTime(e.target.value)}
+                            style={{ width:'100%', padding:'8px 10px', borderRadius:10, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13 }}/>
+                        </div>
+                      </div>
+
+                      <button onClick={confirmAdd} style={{ width:'100%', padding:'13px', borderRadius:14, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', color:'#1a0f00', fontWeight:600, fontSize:14, border:'none', cursor:'pointer' }}>
+                        Add to Log
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function MineralBar({ mineral, intake }) {
+      const pct = Math.min(100, (intake / mineral.target) * 100);
+      const status = pct >= 100 ? 'met' : pct >= 60 ? 'partial' : 'low';
+      const statusColor = status === 'met' ? 'var(--green)' : status === 'partial' ? 'var(--orange)' : 'var(--red)';
+      return (
+        <div style={{ marginBottom:14 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <Icon name={mineral.icon} size={13} style={{ color: mineral.color }}/>
+              <span style={{ fontSize:12, color:'var(--text-dim)' }}>{mineral.label}</span>
+              {pct < 60 && <span style={{ fontSize:9, background:'rgba(255,112,144,0.15)', color:'var(--red)', padding:'2px 6px', borderRadius:999, border:'0.5px solid rgba(255,112,144,0.3)' }}>Low</span>}
+            </div>
+            <span style={{ fontSize:11, color: mineral.color, fontWeight:500 }}>{intake.toFixed(1)} / {mineral.target} {mineral.unit}</span>
+          </div>
+          <div className="bar-track">
+            <div className="bar-fill" style={{ width:`${pct}%`, background:`linear-gradient(90deg,${mineral.color}80,${mineral.color})` }}/>
+          </div>
+          {pct < 60 && (
+            <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:4 }}>
+              {mineral.key === 'iron'      && 'Eat: black sesame, masoor dal, pumpkin seeds'}
+              {mineral.key === 'potassium' && 'Eat: rajma, banana, coconut water, almonds'}
+              {mineral.key === 'zinc'      && 'Eat: pumpkin seeds, black sesame, oats'}
+              {mineral.key === 'magnesium' && 'Eat: pumpkin seeds, flaxseeds, almonds, ragi'}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function FoodScreen() {
+      const [entries, setEntries] = useState(() => S.get('food_' + todayKey(), []));
+      const [showAdd, setShowAdd] = useState(false);
+      const [editId, setEditId]   = useState(null);
+      const [filter, setFilter]   = useState('all');
+
+      const save = e => { setEntries(e); S.set('food_' + todayKey(), e); };
+
+      const addEntry = entry => save([...entries, entry]);
+
+      const deleteEntry = id => save(entries.filter(e => e.id !== id));
+
+      const totals = useMemo(() => entries.reduce((a, e) => ({
+        cal:  a.cal  + (e.cal  || 0),
+        p:    a.p    + (e.p    || 0),
+        c:    a.c    + (e.c    || 0),
+        f:    a.f    + (e.f    || 0),
+        iron: a.iron + (e.iron || 0),
+        k:    a.k    + (e.k    || 0),
+        zn:   a.zn   + (e.zn   || 0),
+        mg:   a.mg   + (e.mg   || 0),
+      }), { cal:0, p:0, c:0, f:0, iron:0, k:0, zn:0, mg:0 }), [entries]);
+
+      const displayed = filter === 'all' ? entries : entries.filter(e => e.photo);
+      const sorted = [...displayed].sort((a,b) => b.time?.localeCompare(a.time));
+
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <div style={{ paddingTop:8, display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:16 }}>
+              <div>
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Food Log</div>
+                <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>Today's Intake</div>
+              </div>
+              <button onClick={() => setShowAdd(true)} style={{ width:44, height:44, borderRadius:999, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <Icon name="Plus" size={20} style={{ color:'#1a0f00' }}/>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ padding:'0 20px' }}>
+            {/* Calorie + macro summary */}
+            <GlassCard strong style={{ padding:18, marginBottom:12 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, textAlign:'center', marginBottom:14 }}>
+                {[['Kcal', Math.round(totals.cal), 'var(--gold)'],['Protein',`${totals.p.toFixed(0)}g`,'var(--green)'],['Carbs',`${totals.c.toFixed(0)}g`,'var(--orange)'],['Fat',`${totals.f.toFixed(0)}g`,'var(--blue)']].map(([l,v,c]) => (
+                  <div key={l}>
+                    <div style={{ fontSize:9, textTransform:'uppercase', color:'var(--text-faint)', letterSpacing:'0.1em' }}>{l}</div>
+                    <div className="serif" style={{ fontSize:22, lineHeight:1.1, marginTop:4, color:c }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Log buttons */}
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8 }}>
+                {[['Camera','Camera','camera'],['Gallery','Image','gallery'],['Voice','Mic','voice'],['Manual','Plus','text']].map(([label,icon,m]) => (
+                  <button key={m} onClick={() => setShowAdd(true)}
+                    style={{ padding:'10px 4px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
+                    <Icon name={icon} size={16} style={{ color:'var(--gold)' }}/>
+                    <span style={{ fontSize:10, color:'var(--text-dim)' }}>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Mineral tracker */}
+            <SectionLabel>Minerals Today</SectionLabel>
+            <GlassCard style={{ padding:20, marginBottom:4 }}>
+              {MINERALS.map(m => (
+                <MineralBar key={m.key} mineral={m} intake={totals[m.key]}/>
+              ))}
+            </GlassCard>
+
+            {/* Food list */}
+            <SectionLabel action={
+              <div style={{ display:'flex', gap:6 }}>
+                {['all','photos'].map(f => (
+                  <button key={f} onClick={() => setFilter(f)} style={{ fontSize:10, padding:'3px 10px', borderRadius:999, cursor:'pointer', border:`0.5px solid ${filter===f?'var(--gold)':'var(--border-soft)'}`, background: filter===f?'rgba(244,228,193,0.15)':'transparent', color: filter===f?'var(--gold)':'var(--text-faint)' }}>{f}</button>
+                ))}
+              </div>
+            }>
+              {sorted.length} entries
+            </SectionLabel>
+
+            {sorted.length === 0 && (
+              <div style={{ textAlign:'center', padding:'40px 0', color:'var(--text-faint)', fontSize:13 }}>
+                Nothing logged yet.<br/>Tap + to add your first meal.
+              </div>
+            )}
+
+            {sorted.map(entry => (
+              <div key={entry.id} style={{ marginBottom:8 }}>
+                <GlassCard style={{ padding:14 }}>
+                  <div style={{ display:'flex', gap:12, alignItems:'flex-start' }}>
+                    {entry.photo
+                      ? <img src={entry.photo} alt="" style={{ width:52, height:52, borderRadius:12, objectFit:'cover', flexShrink:0 }}/>
+                      : <div style={{ width:52, height:52, borderRadius:12, background:'var(--bg-card)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:22 }}>
+                          {FOOD_DB.find(f=>f.id===entry.foodId)?.emoji || '🍽️'}
+                        </div>
+                    }
+                    <div style={{ flex:1 }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                        <div style={{ fontSize:14, fontWeight:500, lineHeight:1.3 }}>{entry.name}</div>
+                        <button onClick={() => deleteEntry(entry.id)} style={{ background:'none', border:'none', cursor:'pointer', padding:4 }}>
+                          <Icon name="Trash2" size={14} style={{ color:'var(--text-faint)' }}/>
+                        </button>
+                      </div>
+                      <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>
+                        {entry.time} · {entry.qty > 1 ? `${entry.qty}× · ` : ''}{entry.cal} kcal
+                      </div>
+                      <div style={{ display:'flex', gap:8, marginTop:6 }}>
+                        {[['P',entry.p+'g','var(--green)'],['Fe',entry.iron+'mg','var(--red)'],['Zn',entry.zn+'mg','var(--blue)']].map(([l,v,c])=>(
+                          <div key={l} style={{ fontSize:10, color:c }}>{l} {v}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </GlassCard>
+              </div>
+            ))}
+
+            <div style={{ height:8 }}/>
+          </div>
+
+          <AddFoodModal open={showAdd} onClose={() => setShowAdd(false)} onAdd={addEntry}/>
+        </div>
+      );
+    }
+
+    /* ── PART 6: BODY SCREEN ─────────────────────────────────────── */
+
+    const WEEK_KEY = () => {
+      const d = new Date();
+      const jan1 = new Date(d.getFullYear(), 0, 1);
+      return `w${Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7)}_${d.getFullYear()}`;
+    };
+
+    function MeasurementsModal({ open, onClose, measurements, onSave }) {
+      const [vals, setVals] = useState(measurements);
+      const set = (k, v) => setVals(p => ({ ...p, [k]: v }));
+      const bf = calcBodyFat(vals.height, vals.waist, vals.neck);
+
+      if (!open) return null;
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="modal-sheet pop-in" onClick={e => e.stopPropagation()}>
+            <div style={{ padding:'16px 20px 0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)' }}>Body Measurements</div>
+              <button onClick={onClose} style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:999, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <Icon name="X" size={14} style={{ color:'var(--text-dim)' }}/>
+              </button>
+            </div>
+            <div style={{ padding:'16px 20px 32px' }}>
+              <div style={{ fontSize:12, color:'var(--text-faint)', marginBottom:16, lineHeight:1.5 }}>
+                Navy method needs 3 measurements. Use a soft tape measure, in cm.
+              </div>
+              {[
+                ['height', 'Height (cm)', 'e.g. 175', '📏'],
+                ['waist',  'Waist at navel (cm)', 'e.g. 88', '📐'],
+                ['neck',   'Neck circumference (cm)', 'e.g. 38', '📐'],
+              ].map(([key, label, ph, icon]) => (
+                <div key={key} style={{ marginBottom:14 }}>
+                  <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:6 }}>{icon} {label}</div>
+                  <input type="number" value={vals[key] || ''} onChange={e => set(key, parseFloat(e.target.value) || 0)}
+                    placeholder={ph}
+                    style={{ width:'100%', padding:'11px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:14 }}/>
+                </div>
+              ))}
+
+              {bf !== null && (
+                <div style={{ padding:'14px', borderRadius:14, background:'rgba(244,228,193,0.08)', border:'0.5px solid rgba(244,228,193,0.25)', marginBottom:16, textAlign:'center' }}>
+                  <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:4 }}>Estimated Body Fat (Navy Method)</div>
+                  <div className="serif" style={{ fontSize:40, color:'var(--gold)' }}>{bf}%</div>
+                </div>
+              )}
+
+              <button onClick={() => { onSave(vals); onClose(); }}
+                style={{ width:'100%', padding:'13px', borderRadius:14, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', color:'#1a0f00', fontWeight:600, fontSize:14, border:'none', cursor:'pointer' }}>
+                Save Measurements
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ReferenceModal({ open, onClose, onSave }) {
+      const imgRef = useRef(null);
+      const [preview, setPreview] = useState(null);
+      const [targetBF, setTargetBF] = useState('12');
+      const [name, setName] = useState('');
+
+      const handleImg = e => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => setPreview(r.result);
+        r.readAsDataURL(f);
+      };
+
+      if (!open) return null;
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="modal-sheet pop-in" onClick={e => e.stopPropagation()}>
+            <div style={{ padding:'16px 20px 0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)' }}>Reference Physique</div>
+              <button onClick={onClose} style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:999, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <Icon name="X" size={14} style={{ color:'var(--text-dim)' }}/>
+              </button>
+            </div>
+            <div style={{ padding:'16px 20px 32px' }}>
+              <div style={{ fontSize:12, color:'var(--text-faint)', marginBottom:14, lineHeight:1.5 }}>
+                Upload a photo of your goal physique. The app will calculate the gap and estimate your timeline.
+              </div>
+
+              <button onClick={() => imgRef.current?.click()}
+                style={{ width:'100%', height:160, borderRadius:16, background:'var(--bg-card)', border:`1.5px dashed var(--border)`, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, marginBottom:14, overflow:'hidden' }}>
+                {preview
+                  ? <img src={preview} alt="ref" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+                  : <>
+                      <Icon name="Upload" size={28} style={{ color:'var(--text-faint)' }}/>
+                      <span style={{ fontSize:13, color:'var(--text-faint)' }}>Tap to upload reference photo</span>
+                    </>
+                }
+              </button>
+              <input ref={imgRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImg}/>
+
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:6 }}>Who is this? (optional)</div>
+                <input value={name} onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Hrithik Roshan, my old photo…"
+                  style={{ width:'100%', padding:'11px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:14 }}/>
+              </div>
+
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:6 }}>Their estimated body fat %</div>
+                <div className="h-pills">
+                  {['8','10','12','15','18'].map(v => (
+                    <button key={v} onClick={() => setTargetBF(v)}
+                      style={{ flexShrink:0, padding:'7px 16px', borderRadius:999, fontSize:13, fontWeight:500, cursor:'pointer',
+                        background: targetBF===v ? 'var(--gold)' : 'var(--bg-card)',
+                        color: targetBF===v ? '#1a0f00' : 'var(--text-dim)',
+                        border:`0.5px solid ${targetBF===v ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                      {v}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={() => { if (preview) { onSave({ photo:preview, targetBF:parseFloat(targetBF), name }); onClose(); } }}
+                disabled={!preview}
+                style={{ width:'100%', padding:'13px', borderRadius:14, background: preview ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)', color: preview ? '#1a0f00' : 'var(--text-faint)', fontWeight:600, fontSize:14, border:'none', cursor: preview ? 'pointer' : 'default' }}>
+                Set as Reference
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ProgressPhotoModal({ open, onClose, onSave, category }) {
+      const imgRef = useRef(null);
+      const [preview, setPreview] = useState(null);
+      const [note, setNote] = useState('');
+
+      const handleImg = e => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => setPreview(r.result);
+        r.readAsDataURL(f);
+      };
+
+      if (!open) return null;
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="modal-sheet pop-in" onClick={e => e.stopPropagation()}>
+            <div style={{ padding:'16px 20px 0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)' }}>
+                {category === 'body' ? 'Body' : category === 'hair' ? 'Hair' : 'Skin'} Photo
+              </div>
+              <button onClick={onClose} style={{ background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', borderRadius:999, width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <Icon name="X" size={14} style={{ color:'var(--text-dim)' }}/>
+              </button>
+            </div>
+            <div style={{ padding:'16px 20px 32px' }}>
+              <div style={{ fontSize:12, color:'var(--text-faint)', marginBottom:14, lineHeight:1.5 }}>
+                {category === 'body' && 'Same pose, same lighting, same time of day — for honest comparison.'}
+                {category === 'hair' && 'Under good light. Same angle as last week for accurate follicle comparison.'}
+                {category === 'skin' && 'Natural light, no filter. Same side of face each time.'}
+              </div>
+
+              <button onClick={() => imgRef.current?.click()}
+                style={{ width:'100%', height:200, borderRadius:16, background:'var(--bg-card)', border:`1.5px dashed var(--border)`, cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, marginBottom:14, overflow:'hidden' }}>
+                {preview
+                  ? <img src={preview} alt="progress" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+                  : <>
+                      <Icon name="Camera" size={32} style={{ color:'var(--text-faint)' }}/>
+                      <span style={{ fontSize:13, color:'var(--text-faint)' }}>Take or upload photo</span>
+                    </>
+                }
+              </button>
+              <input ref={imgRef} type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={handleImg}/>
+
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:6 }}>Notes (optional)</div>
+                <input value={note} onChange={e => setNote(e.target.value)}
+                  placeholder="e.g. Feeling leaner, slight hair density improvement…"
+                  style={{ width:'100%', padding:'11px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13 }}/>
+              </div>
+
+              <button onClick={() => { if (preview) { onSave({ photo:preview, note, week: WEEK_KEY(), date: new Date().toLocaleDateString() }); onClose(); setPreview(null); setNote(''); } }}
+                disabled={!preview}
+                style={{ width:'100%', padding:'13px', borderRadius:14, background: preview ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)', color: preview ? '#1a0f00' : 'var(--text-faint)', fontWeight:600, fontSize:14, border:'none', cursor: preview ? 'pointer' : 'default' }}>
+                Save Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function BodyScreen() {
+      const [measurements, setMeasurements] = useState(() => S.get('measurements', { height:0, waist:0, neck:0 }));
+      const [reference, setReference]       = useState(() => S.get('reference', null));
+      const [photos, setPhotos]             = useState(() => S.get('progress_photos', { body:[], hair:[], skin:[] }));
+      const [showMeasure, setShowMeasure]   = useState(false);
+      const [showRef, setShowRef]           = useState(false);
+      const [photoModal, setPhotoModal]     = useState(null);
+      const [photoTab, setPhotoTab]         = useState('body');
+
+      const currentBF = calcBodyFat(measurements.height, measurements.waist, measurements.neck);
+      const timeline  = reference && currentBF ? calcTimeline(currentBF, reference.targetBF) : null;
+      const bfDiff    = reference && currentBF ? (currentBF - reference.targetBF).toFixed(1) : null;
+
+      const saveMeasurements = m => { setMeasurements(m); S.set('measurements', m); };
+
+      const saveReference = r => { setReference(r); S.set('reference', r); };
+
+      const addPhoto = (cat, p) => {
+        const next = { ...photos, [cat]: [p, ...photos[cat]] };
+        setPhotos(next);
+        S.set('progress_photos', next);
+      };
+
+      const categoryPhotos = photos[photoTab] || [];
+      const latest = categoryPhotos[0];
+      const previous = categoryPhotos[1];
+
+      const changeNote = () => {
+        if (!latest || !previous) return null;
+        return latest.note || 'No change noted yet.';
+      };
+
+      return (
+        <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <div style={{ paddingTop:8, marginBottom:20 }}>
+              <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Body Tracking</div>
+              <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>Body & Progress</div>
+            </div>
+          </div>
+
+          <div style={{ padding:'0 20px' }}>
+
+            {/* Body fat card */}
+            <GlassCard strong style={{ padding:20, marginBottom:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Body Fat % (Navy Method)</div>
+                  {currentBF !== null
+                    ? <div className="serif" style={{ fontSize:48, lineHeight:1, marginTop:6, color:'var(--gold)' }}>{currentBF}%</div>
+                    : <div style={{ fontSize:14, color:'var(--text-faint)', marginTop:8, lineHeight:1.5 }}>Add your measurements<br/>to calculate body fat.</div>
+                  }
+                </div>
+                <button onClick={() => setShowMeasure(true)}
+                  style={{ padding:'8px 14px', borderRadius:999, background:'var(--bg-card)', border:'0.5px solid var(--border)', fontSize:12, color:'var(--gold)', cursor:'pointer' }}>
+                  {currentBF ? 'Update' : 'Measure'}
+                </button>
+              </div>
+
+              {currentBF !== null && (
+                <>
+                  {[['Height', measurements.height+'cm'], ['Waist', measurements.waist+'cm'], ['Neck', measurements.neck+'cm']].map(([l,v]) => (
+                    <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'0.5px solid var(--border-soft)', fontSize:12 }}>
+                      <span style={{ color:'var(--text-faint)' }}>{l}</span>
+                      <span style={{ color:'var(--text)' }}>{v}</span>
+                    </div>
+                  ))}
+                  <div style={{ marginTop:14 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-faint)', marginBottom:6 }}>
+                      <span>Essential fat (3%)</span><span>Athletic (6–13%)</span><span>Fit (14–17%)</span>
+                    </div>
+                    <div style={{ position:'relative', height:8, borderRadius:999, background:'linear-gradient(90deg,var(--blue),var(--green),var(--orange),var(--red))', marginBottom:4 }}>
+                      <div style={{ position:'absolute', top:-3, width:14, height:14, borderRadius:999, background:'var(--bg)', border:'2.5px solid var(--gold)', transform:'translateX(-50%)', left:`${Math.min(97,Math.max(3,currentBF*2))}%`, transition:'left .4s' }}/>
+                    </div>
+                  </div>
+                </>
+              )}
+            </GlassCard>
+
+            {/* Reference physique */}
+            <GlassCard style={{ padding:20, marginBottom:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)' }}>Reference Physique</div>
+                <button onClick={() => setShowRef(true)}
+                  style={{ padding:'6px 12px', borderRadius:999, background:'var(--bg-card)', border:'0.5px solid var(--border)', fontSize:11, color:'var(--gold)', cursor:'pointer' }}>
+                  {reference ? 'Change' : 'Set Goal'}
+                </button>
+              </div>
+
+              {reference ? (
+                <div>
+                  <div style={{ display:'flex', gap:14, alignItems:'flex-start', marginBottom:14 }}>
+                    <img src={reference.photo} alt="ref" style={{ width:80, height:100, borderRadius:14, objectFit:'cover', flexShrink:0 }}/>
+                    <div style={{ flex:1 }}>
+                      {reference.name && <div style={{ fontSize:14, fontWeight:500, marginBottom:6 }}>{reference.name}</div>}
+                      <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:4 }}>Target body fat</div>
+                      <div className="serif" style={{ fontSize:28, color:'var(--green)' }}>{reference.targetBF}%</div>
+                      {bfDiff && (
+                        <div style={{ marginTop:6 }}>
+                          <div style={{ fontSize:11, color:'var(--text-faint)' }}>Gap to close</div>
+                          <div style={{ fontSize:18, fontWeight:600, color: parseFloat(bfDiff)>0?'var(--orange)':'var(--green)' }}>
+                            {parseFloat(bfDiff)>0?'−':'+'}{Math.abs(bfDiff)}%
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {timeline && parseFloat(bfDiff) > 0 && (
+                    <div style={{ padding:'14px', borderRadius:14, background:'rgba(168,213,186,0.08)', border:'0.5px solid rgba(168,213,186,0.25)' }}>
+                      <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:10 }}>Timeline Prediction</div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                        <div style={{ textAlign:'center', padding:'10px', borderRadius:12, background:'var(--bg-card)' }}>
+                          <div style={{ fontSize:9, color:'var(--text-faint)', textTransform:'uppercase', marginBottom:4 }}>Aggressive</div>
+                          <div className="serif" style={{ fontSize:24, color:'var(--orange)' }}>{timeline.weeks_fast}w</div>
+                          <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>~1% BF/week</div>
+                        </div>
+                        <div style={{ textAlign:'center', padding:'10px', borderRadius:12, background:'var(--bg-card)' }}>
+                          <div style={{ fontSize:9, color:'var(--text-faint)', textTransform:'uppercase', marginBottom:4 }}>Sustainable</div>
+                          <div className="serif" style={{ fontSize:24, color:'var(--green)' }}>{timeline.weeks_safe}w</div>
+                          <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>~0.5% BF/week</div>
+                        </div>
+                      </div>
+                      <div style={{ marginTop:12, fontSize:11, color:'var(--text-dim)', lineHeight:1.5 }}>
+                        Focus on: <span style={{ color:'var(--gold)' }}>progressive overload + protein {'>'}120g/day + 500 kcal deficit + sleep 8h</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentBF !== null && parseFloat(bfDiff) <= 0 && (
+                    <div style={{ textAlign:'center', padding:'16px', borderRadius:14, background:'rgba(168,213,186,0.1)', border:'0.5px solid rgba(168,213,186,0.3)' }}>
+                      <div style={{ fontSize:24 }}>🎯</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:'var(--green)', marginTop:6 }}>Goal Reached!</div>
+                      <div style={{ fontSize:12, color:'var(--text-faint)', marginTop:4 }}>Set a new reference to keep progressing.</div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign:'center', padding:'24px 0', color:'var(--text-faint)' }}>
+                  <div style={{ fontSize:32, marginBottom:10 }}>💪</div>
+                  <div style={{ fontSize:13, lineHeight:1.6 }}>Upload a reference physique photo.<br/>We'll calculate how long it'll take.</div>
+                </div>
+              )}
+            </GlassCard>
+
+            {/* Progress photos */}
+            <SectionLabel>Progress Photos</SectionLabel>
+            <div className="h-pills" style={{ padding:'0 20px 12px' }}>
+              {[['body','Body 💪'],['hair','Hair 💆'],['skin','Skin ✨']].map(([k,l]) => (
+                <Chip key={k} label={l} active={photoTab===k} color="var(--gold)" onClick={() => setPhotoTab(k)}/>
+              ))}
+            </div>
+
+            <GlassCard style={{ padding:20, marginBottom:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                <div style={{ fontSize:13, color:'var(--text-dim)' }}>
+                  {categoryPhotos.length === 0 ? 'No photos yet' : `${categoryPhotos.length} photo${categoryPhotos.length>1?'s':''}`}
+                </div>
+                <button onClick={() => setPhotoModal(photoTab)}
+                  style={{ padding:'8px 16px', borderRadius:999, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', color:'#1a0f00', fontWeight:600, fontSize:12, border:'none', cursor:'pointer' }}>
+                  + Add This Week
+                </button>
+              </div>
+
+              {/* Before / After compare */}
+              {categoryPhotos.length >= 2 && (
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:10 }}>
+                    {[['Previous', previous], ['Latest', latest]].map(([label, p]) => p && (
+                      <div key={label}>
+                        <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:6, textAlign:'center' }}>{label} · {p.date}</div>
+                        <img src={p.photo} alt={label} style={{ width:'100%', height:180, objectFit:'cover', borderRadius:14, border:'0.5px solid var(--border-soft)' }}/>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ padding:'12px 14px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)' }}>
+                    <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:4 }}>AI Change Detection</div>
+                    <div style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.5 }}>
+                      {changeNote() && changeNote() !== 'No change noted yet.'
+                        ? changeNote()
+                        : '📊 Compare photos side by side. Add a note when you add a photo to track real changes. Honest tracking only — no fake progress shown.'
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {categoryPhotos.length === 1 && (
+                <div>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:8, textAlign:'center' }}>Week 1 — Starting point</div>
+                  <img src={latest.photo} alt="progress" style={{ width:'100%', maxHeight:240, objectFit:'cover', borderRadius:14 }}/>
+                  <div style={{ marginTop:10, fontSize:12, color:'var(--text-faint)', textAlign:'center' }}>
+                    Add next week's photo to start comparison.
+                  </div>
+                </div>
+              )}
+
+              {categoryPhotos.length === 0 && (
+                <div style={{ textAlign:'center', padding:'32px 0', color:'var(--text-faint)' }}>
+                  <div style={{ fontSize:40, marginBottom:10 }}>
+                    {photoTab==='body'?'💪':photoTab==='hair'?'💆':'✨'}
+                  </div>
+                  <div style={{ fontSize:13, lineHeight:1.6 }}>
+                    Add your first {photoTab} photo.<br/>
+                    Weekly photos show real change over time.
+                  </div>
+                </div>
+              )}
+
+              {/* Photo timeline scroll */}
+              {categoryPhotos.length > 2 && (
+                <div style={{ marginTop:14 }}>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:10, textTransform:'uppercase', letterSpacing:'0.15em' }}>All Photos</div>
+                  <div className="scroll-x no-bar" style={{ display:'flex', gap:10, paddingBottom:4 }}>
+                    {categoryPhotos.map((p, i) => (
+                      <div key={i} style={{ flexShrink:0 }}>
+                        <img src={p.photo} alt="" style={{ width:80, height:100, objectFit:'cover', borderRadius:12, border:'0.5px solid var(--border-soft)' }}/>
+                        <div style={{ fontSize:9, color:'var(--text-faint)', textAlign:'center', marginTop:4 }}>{p.date}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </GlassCard>
+          </div>
+
+          <MeasurementsModal open={showMeasure} onClose={() => setShowMeasure(false)} measurements={measurements} onSave={saveMeasurements}/>
+          <ReferenceModal    open={showRef}     onClose={() => setShowRef(false)}     onSave={saveReference}/>
+          <ProgressPhotoModal open={!!photoModal} onClose={() => setPhotoModal(null)} category={photoModal} onSave={p => addPhoto(photoModal, p)}/>
+        </div>
+      );
+    }
+
+    /* ── PART 7: MORE SCREEN ─────────────────────────────────────── */
+
+    function DrinksTab() {
+      const [open, setOpen] = useState(null);
+      const [logged, setLogged] = useState(() => S.get('drinks_logged', []));
+
+      const logDrink = id => {
+        const entry = { id, time: new Date().toTimeString().slice(0,5), date: todayKey() };
+        const next = [entry, ...logged.slice(0, 49)];
+        setLogged(next); S.set('drinks_logged', next);
+      };
+
+      return (
+        <div>
+          <div style={{ fontSize:13, color:'var(--text-faint)', lineHeight:1.6, marginBottom:20 }}>
+            8 Vedic drinks — all modern-available. Tap to see prep and benefits.
+          </div>
+          {HERBAL_DRINKS.map(d => (
+            <GlassCard key={d.id} style={{ padding:18, marginBottom:10 }}>
+              <button onClick={() => setOpen(open === d.id ? null : d.id)}
+                style={{ width:'100%', background:'none', border:'none', cursor:'pointer', textAlign:'left' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                    <div style={{ width:44, height:44, borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22,
+                      background:`${d.color}18`, border:`0.5px solid ${d.color}40` }}>
+                      {d.emoji}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:500, color:'var(--text)' }}>{d.name}</div>
+                      <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>{d.when}</div>
+                    </div>
+                  </div>
+                  <Icon name={open === d.id ? 'ChevronUp' : 'ChevronDown'} size={16} style={{ color:'var(--text-faint)' }}/>
+                </div>
+              </button>
+
+              {open === d.id && (
+                <div className="fade-up" style={{ marginTop:14, paddingTop:14, borderTop:'0.5px solid var(--border-soft)' }}>
+                  <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:10 }}>
+                    <span style={{ color:'var(--text-faint)' }}>Ingredients: </span>{d.ingredients}
+                  </div>
+                  <div style={{ fontSize:12, color:'var(--text-dim)', marginBottom:12 }}>
+                    <span style={{ color:'var(--text-faint)' }}>How to prep: </span>{d.prep}
+                  </div>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:14 }}>
+                    {d.benefits.map((b,i) => (
+                      <span key={i} style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:`${d.color}15`, border:`0.5px solid ${d.color}35`, color:d.color }}>{b}</span>
+                    ))}
+                  </div>
+                  <button onClick={() => logDrink(d.id)}
+                    style={{ width:'100%', padding:'10px', borderRadius:12, background:`${d.color}20`, border:`0.5px solid ${d.color}40`, color:d.color, fontWeight:600, fontSize:13, cursor:'pointer' }}>
+                    ✓ Log this drink
+                  </button>
+                </div>
+              )}
+            </GlassCard>
+          ))}
+        </div>
+      );
+    }
+
+    function AsanasTab() {
+      const [active, setActive] = useState(null);
+      const timer = useTimer(0, false);
+
+      const start = asana => {
+        setActive(asana);
+        timer.reset(0);
+        timer.toggle();
+      };
+
+      const stop = () => { timer.reset(0); setActive(null); };
+
+      return (
+        <div>
+          <div style={{ fontSize:13, color:'var(--text-faint)', lineHeight:1.6, marginBottom:20 }}>
+            10 Vedic asanas. Tap Start to activate the live timer.
+          </div>
+
+          {active && (
+            <GlassCard strong style={{ padding:20, marginBottom:16, textAlign:'center' }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>{active.emoji}</div>
+              <div className="serif" style={{ fontSize:24, color:'var(--gold)', marginBottom:4 }}>{active.name}</div>
+              <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:16 }}>{active.benefit}</div>
+              <div className="mono serif breathe" style={{ fontSize:52, color:'var(--gold)', marginBottom:4 }}>{timer.display}</div>
+              <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:20 }}>
+                Target: {Math.floor(active.dur/60)}:{String(active.dur%60).padStart(2,'0')} min
+              </div>
+              <ProgressBar value={timer.elapsed} max={active.dur} color={active.color}/>
+              <div style={{ display:'flex', gap:10, marginTop:16 }}>
+                <button onClick={timer.toggle} style={{ flex:1, padding:'11px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer' }}>
+                  {timer.running ? '⏸ Pause' : '▶ Resume'}
+                </button>
+                <button onClick={stop} style={{ flex:1, padding:'11px', borderRadius:12, background:`${active.color}20`, border:`0.5px solid ${active.color}40`, color:active.color, fontWeight:600, fontSize:13, cursor:'pointer' }}>
+                  ✓ Done
+                </button>
+              </div>
+            </GlassCard>
+          )}
+
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            {ASANAS.map(a => (
+              <GlassCard key={a.id} style={{ padding:14 }}>
+                <div style={{ fontSize:24, marginBottom:8 }}>{a.emoji}</div>
+                <div style={{ fontSize:13, fontWeight:500, marginBottom:4, lineHeight:1.3 }}>{a.name}</div>
+                <div style={{ fontSize:10, color:'var(--text-faint)', marginBottom:10, lineHeight:1.4 }}>{a.benefit}</div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span style={{ fontSize:10, color:a.color }}>{Math.floor(a.dur/60)}:{String(a.dur%60).padStart(2,'0')}min</span>
+                  <button onClick={() => start(a)}
+                    style={{ padding:'5px 12px', borderRadius:999, background:`${a.color}20`, border:`0.5px solid ${a.color}40`, color:a.color, fontSize:11, fontWeight:600, cursor:'pointer' }}>
+                    Start
+                  </button>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function PranayamaTab() {
+      const [active, setActive] = useState(null);
+      const [phase, setPhase]   = useState('inhale');
+      const [beat, setBeat]     = useState(0);
+      const timer = useTimer(0, false);
+
+      const start = p => { setActive(p); setPhase('inhale'); setBeat(0); timer.reset(0); timer.toggle(); };
+      const stop  = () => { timer.reset(0); setActive(null); };
+
+      useEffect(() => {
+        if (!active || !timer.running) return;
+        const pat = active.pattern;
+        const cycle = Object.values(pat).reduce((a,b)=>a+b,0);
+        const pos = timer.elapsed % cycle;
+        let acc = 0;
+        for (const [k,v] of Object.entries(pat)) {
+          acc += v;
+          if (pos < acc) { setPhase(k); break; }
+        }
+        setBeat(timer.elapsed);
+      }, [timer.elapsed, active, timer.running]);
+
+      const phaseLabel = { inhale:'Inhale', hold:'Hold', exhale:'Exhale', hum:'Hum...', pause:'Rest' };
+      const phaseColor = { inhale:'var(--blue)', hold:'var(--purple)', exhale:'var(--green)', hum:'var(--gold)', pause:'var(--text-faint)' };
+
+      return (
+        <div>
+          <div style={{ fontSize:13, color:'var(--text-faint)', lineHeight:1.6, marginBottom:20 }}>
+            5 pranayama techniques with live breathing guidance.
+          </div>
+
+          {active && (
+            <GlassCard strong style={{ padding:24, marginBottom:16, textAlign:'center' }}>
+              <div style={{ fontSize:32, marginBottom:6 }}>{active.emoji}</div>
+              <div className="serif" style={{ fontSize:22, color:'var(--gold)', marginBottom:16 }}>{active.name}</div>
+
+              <div className="breathe" style={{ width:100, height:100, borderRadius:999, margin:'0 auto 20px',
+                background: `radial-gradient(circle, ${phaseColor[phase]}30, transparent)`,
+                border:`2px solid ${phaseColor[phase]}60`,
+                display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ fontSize:16, fontWeight:600, color: phaseColor[phase] }}>{phaseLabel[phase] || phase}</div>
+              </div>
+
+              <div className="mono" style={{ fontSize:40, color:'var(--gold)', marginBottom:4 }}>{timer.display}</div>
+              <div style={{ fontSize:11, color:'var(--text-faint)', marginBottom:20 }}>
+                {Math.floor(active.dur/60)} min session
+              </div>
+              <ProgressBar value={timer.elapsed} max={active.dur} color={active.color}/>
+              <div style={{ marginTop:14, padding:'12px', borderRadius:12, background:'var(--bg-card)', textAlign:'left' }}>
+                <div style={{ fontSize:11, color:'var(--text-dim)', lineHeight:1.6 }}>{active.instruction}</div>
+              </div>
+              <div style={{ display:'flex', gap:10, marginTop:14 }}>
+                <button onClick={timer.toggle} style={{ flex:1, padding:'11px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer' }}>
+                  {timer.running ? '⏸ Pause' : '▶ Resume'}
+                </button>
+                <button onClick={stop} style={{ flex:1, padding:'11px', borderRadius:12, background:`${active.color}20`, border:`0.5px solid ${active.color}40`, color:active.color, fontWeight:600, fontSize:13, cursor:'pointer' }}>
+                  ✓ Done
+                </button>
+              </div>
+            </GlassCard>
+          )}
+
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            {PRANAYAMA.map(p => (
+              <GlassCard key={p.id} style={{ padding:18 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <span style={{ fontSize:28 }}>{p.emoji}</span>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:500 }}>{p.name}</div>
+                      <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>{Math.floor(p.dur/60)} min</div>
+                    </div>
+                  </div>
+                  <button onClick={() => start(p)}
+                    style={{ padding:'7px 16px', borderRadius:999, background:`${p.color}20`, border:`0.5px solid ${p.color}40`, color:p.color, fontWeight:600, fontSize:12, cursor:'pointer', flexShrink:0 }}>
+                    Begin
+                  </button>
+                </div>
+                <div style={{ fontSize:12, color:'var(--text-dim)', lineHeight:1.5 }}>{p.benefit}</div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function AnalyticsTab() {
+      const sleepData  = S.get('sleep', { history:[6.5,7.1,6.8,7.4,7.2,6.9,7.2] });
+      const weightData = S.get('weight', { history:[84.5,83.8,83.2,82.5,81.8,81.5,81.2], current:81.2, start:84.5 });
+      const steps      = S.get('steps', { count:0 });
+      const water      = S.get('water', { glasses:0, goal:8 });
+      const todayFood  = S.get('food_' + todayKey(), []);
+      const totals     = todayFood.reduce((a,e) => ({ cal:a.cal+(e.cal||0), p:a.p+(e.p||0) }), { cal:0, p:0 });
+
+      const avgSleep = sleepData.history.length
+        ? (sleepData.history.reduce((a,b)=>a+b,0)/sleepData.history.length).toFixed(1) : '–';
+      const weightLost = weightData.start ? (weightData.start - weightData.current).toFixed(1) : '–';
+
+      return (
+        <div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+            {[
+              ['Avg Sleep', `${avgSleep}h`, 'var(--purple)', 'Moon'],
+              ['Steps Today', steps.count.toLocaleString(), 'var(--orange)', 'Footprints'],
+              ['Kcal Today', Math.round(totals.cal), 'var(--gold)', 'Utensils'],
+              ['Weight Lost', `${weightLost}kg`, 'var(--green)', 'TrendingDown'],
+            ].map(([label, val, color, icon]) => (
+              <GlassCard key={label} style={{ padding:16 }}>
+                <Icon name={icon} size={16} style={{ color, marginBottom:8 }}/>
+                <div style={{ fontSize:9, textTransform:'uppercase', color:'var(--text-faint)', letterSpacing:'0.12em' }}>{label}</div>
+                <div className="serif" style={{ fontSize:26, lineHeight:1.1, marginTop:4, color }}>{val}</div>
+              </GlassCard>
+            ))}
+          </div>
+
+          <SectionLabel>Sleep — 7-Day Trend</SectionLabel>
+          <GlassCard style={{ padding:18, marginBottom:10 }}>
+            <MiniLineChart data={sleepData.history} height={60} color="var(--purple)" filled/>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:6 }}>
+              <span>7 days ago</span><span>Today</span>
+            </div>
+          </GlassCard>
+
+          <SectionLabel>Weight Trend</SectionLabel>
+          <GlassCard style={{ padding:18, marginBottom:10 }}>
+            <MiniLineChart data={weightData.history} height={60} color="var(--orange)" filled/>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:6 }}>
+              <span>Start</span><span>Now</span>
+            </div>
+          </GlassCard>
+
+          <SectionLabel>Today's Minerals</SectionLabel>
+          <GlassCard style={{ padding:18, marginBottom:10 }}>
+            {MINERALS.map(m => {
+              const intake = todayFood.reduce((a,e) => a+(e[m.key]||0), 0);
+              return <MineralBar key={m.key} mineral={m} intake={intake}/>;
+            })}
+          </GlassCard>
+
+          <SectionLabel>Water Today</SectionLabel>
+          <GlassCard style={{ padding:18, marginBottom:4 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+              <div className="serif" style={{ fontSize:28, color:'var(--blue)' }}>{water.glasses}<span style={{ fontSize:16, color:'var(--text-faint)' }}>/{water.goal}</span></div>
+              <div style={{ fontSize:12, color:'var(--text-faint)' }}>{Math.round((water.glasses/water.goal)*100)}% of goal</div>
+            </div>
+            <ProgressBar value={water.glasses} max={water.goal} color="var(--blue)"/>
+          </GlassCard>
+        </div>
+      );
+    }
+
+    function SettingsTab({ theme, setTheme }) {
+      const exportData = () => {
+        try {
+          const data = {};
+          Object.keys(localStorage).filter(k => k.startsWith('svva_')).forEach(k => { data[k] = localStorage.getItem(k); });
+          const str = JSON.stringify(data, null, 2);
+          navigator.clipboard?.writeText(str).then(() => alert('Data copied to clipboard!'));
+        } catch { alert('Open browser console → copy localStorage manually.'); }
+      };
+
+      return (
+        <div>
+          <GlassCard style={{ padding:20, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:16 }}>Theme</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+              {[['dark','🌑 Dark'],['white','☀️ White']].map(([t,label]) => (
+                <button key={t} onClick={() => { setTheme(t); document.documentElement.setAttribute('data-theme', t); S.set('theme', t); }}
+                  style={{ padding:'14px', borderRadius:14, cursor:'pointer', fontWeight:600, fontSize:13,
+                    background: theme===t ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
+                    color: theme===t ? '#1a0f00' : 'var(--text-dim)',
+                    border:`0.5px solid ${theme===t ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard style={{ padding:20, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Data</div>
+            {[
+              ['✅ Stored locally on your device', 'var(--green)'],
+              ['✅ Works offline — no internet needed', 'var(--green)'],
+              ['✅ No accounts, no cloud sync', 'var(--green)'],
+              ['📱 Add to Home Screen for app-like use', 'var(--text-dim)'],
+            ].map(([t,c]) => (
+              <div key={t} style={{ fontSize:12, color:c, padding:'5px 0', borderBottom:'0.5px solid var(--border-soft)' }}>{t}</div>
+            ))}
+          </GlassCard>
+
+          <GlassCard style={{ padding:20, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Backup</div>
+            <button onClick={exportData}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--gold)', fontSize:13, cursor:'pointer', marginBottom:10 }}>
+              📋 Export all data (copy JSON)
+            </button>
+            <div style={{ fontSize:11, color:'var(--text-faint)', lineHeight:1.5 }}>
+              Paste in Notes or email for backup. Import: open console → paste to localStorage.
+            </div>
+          </GlassCard>
+
+          <button onClick={() => { if (confirm('Delete all SVVA data? This cannot be undone.')) { S.clear(); window.location.reload(); } }}
+            style={{ width:'100%', padding:'13px', borderRadius:14, background:'rgba(255,112,144,0.12)', border:'0.5px solid rgba(255,112,144,0.3)', color:'var(--red)', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+            🗑 Clear All Data
+          </button>
+        </div>
+      );
+    }
+
+    function MoreScreen({ theme, setTheme }) {
+      const [tab, setTab] = useState('drinks');
+      const tabs = [['drinks','Drinks','🌿'],['asanas','Asanas','🧘'],['pranayama','Breath','🌬️'],['analytics','Analytics','📊'],['settings','Settings','⚙️']];
+
+      return (
+        <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+          <div className="safe-t" style={{ padding:'0 20px', paddingTop:'max(16px,env(safe-area-inset-top))' }}>
+            <div style={{ paddingTop:8 }}>
+              <div className="serif" style={{ fontSize:32, lineHeight:1.1 }}>More</div>
+            </div>
+            <div className="h-pills" style={{ padding:'14px 0 4px' }}>
+              {tabs.map(([k,l,e]) => (
+                <button key={k} onClick={() => setTab(k)}
+                  style={{ flexShrink:0, padding:'7px 14px', borderRadius:999, fontSize:12, fontWeight:500, cursor:'pointer',
+                    background: tab===k ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
+                    color: tab===k ? '#1a0f00' : 'var(--text-dim)',
+                    border:`0.5px solid ${tab===k ? 'var(--gold)' : 'var(--border-soft)'}` }}>
+                  {e} {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="scroll-y no-bar" style={{ flex:1, padding:'8px 20px', paddingBottom:100 }}>
+            {tab === 'drinks'    && <DrinksTab/>}
+            {tab === 'asanas'    && <AsanasTab/>}
+            {tab === 'pranayama' && <PranayamaTab/>}
+            {tab === 'analytics' && <AnalyticsTab/>}
+            {tab === 'settings'  && <SettingsTab theme={theme} setTheme={setTheme}/>}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── BOTTOM NAV ──────────────────────────────────────────────── */
+    function BottomNav({ active, onChange }) {
+      const tabs = [
+        { id:'home',      label:'Home',      icon:'House'      },
+        { id:'protocols', label:'Protocols', icon:'BookOpen'   },
+        { id:'food',      label:'Food',      icon:'Utensils'   },
+        { id:'body',      label:'Body',      icon:'Activity'   },
+        { id:'more',      label:'More',      icon:'LayoutGrid' },
+      ];
+      return (
+        <div className="safe-b" style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, padding:'0 16px', paddingBottom:'max(16px,env(safe-area-inset-bottom))' }}>
+          <div className="nav-glass" style={{ borderRadius:28, display:'flex' }}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => onChange(t.id)}
+                style={{ flex:1, padding:'10px 4px 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', position:'relative' }}>
+                {active === t.id && (
+                  <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:28, height:2, borderRadius:999, background:'linear-gradient(90deg,transparent,var(--gold),transparent)' }}/>
+                )}
+                <Icon name={t.icon} size={20} strokeWidth={active===t.id ? 2 : 1.5}
+                  style={{ color: active===t.id ? 'var(--gold)' : 'var(--text-faint)', transition:'color .2s' }}/>
+                <span style={{ fontSize:9, letterSpacing:'0.06em', color: active===t.id ? 'var(--gold)' : 'var(--text-faint)', fontWeight: active===t.id ? 600 : 400, transition:'color .2s' }}>
+                  {t.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── FULL APP ────────────────────────────────────────────────── */
+    function App() {
+      const [tab,   setTab]   = useState('home');
+      const [theme, setTheme] = useState(() => { const t = S.get('theme','dark'); document.documentElement.setAttribute('data-theme',t); return t; });
+      const stepData = useStepCounter();
+
+      const changeTab = t => {
+        setTab(t);
+        document.getElementById('svva-scroll')?.scrollTo(0, 0);
+      };
+
+      const bg = 'radial-gradient(ellipse 80% 60% at 10% 0%,var(--glow-a),transparent 60%), radial-gradient(ellipse 60% 60% at 90% 110%,var(--glow-b),transparent 60%), var(--bg)';
+
+      return (
+        <div style={{ width:'100%', height:'100dvh', display:'flex', flexDirection:'column', background:bg, overflow:'hidden' }}>
+          <div id="svva-scroll" style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column' }}>
+            {tab === 'home'      && <HomeScreen stepData={stepData}/>}
+            {tab === 'protocols' && <ProtocolsScreen/>}
+            {tab === 'food'      && <FoodScreen/>}
+            {tab === 'body'      && <BodyScreen/>}
+            {tab === 'more'      && <MoreScreen theme={theme} setTheme={setTheme}/>}
+          </div>
+          <BottomNav active={tab} onChange={changeTab}/>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
