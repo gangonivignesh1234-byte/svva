@@ -2300,9 +2300,14 @@
             </div>
           </GlassCard>
 
+          <button onClick={() => { if (confirm('Restart onboarding? Your other data is kept.')) { localStorage.removeItem('svva_onboarded'); window.location.reload(); } }}
+            style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text-dim)', fontSize:13, cursor:'pointer', marginBottom:10 }}>
+            ↺ Restart onboarding
+          </button>
+
           <button onClick={() => { if (confirm('Delete all SVVA data? This cannot be undone.')) { S.clear(); window.location.reload(); } }}
-            style={{ width:'100%', padding:'13px', borderRadius:14, background:'rgba(255,112,144,0.12)', border:'0.5px solid rgba(255,112,144,0.3)', color:'var(--red)', fontWeight:600, fontSize:13, cursor:'pointer' }}>
-            🗑 Clear All Data
+            style={{ width:'100%', padding:'13px', borderRadius:14, background:'rgba(248,113,113,0.12)', border:'0.5px solid rgba(248,113,113,0.3)', color:'var(--red)', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+            Clear All Data
           </button>
         </div>
       );
@@ -2371,11 +2376,451 @@
       );
     }
 
+    /* ── ONBOARDING (Phase 2) ────────────────────────────────────── */
+    const ONBOARD_GOALS = [
+      { id:'fat_loss',  emoji:'🔥', label:'Fat Loss',         desc:'Lose body fat, lean down', protocol:'code90' },
+      { id:'muscle',    emoji:'💪', label:'Muscle Building',  desc:'Strength + size',           protocol:'codePhysique' },
+      { id:'hair',      emoji:'🌿', label:'Hair Growth',      desc:'Stop loss, regrow',         protocol:'codeHair' },
+      { id:'glow',      emoji:'✨', label:'Skin Glow',         desc:'Clear, even, radiant',     protocol:'codeGlow' },
+      { id:'youth',     emoji:'🌱', label:'Anti-Aging',        desc:'Reverse biological age',   protocol:'codeYouth' },
+      { id:'wellness',  emoji:'⚖️', label:'Overall Wellness', desc:'Energy + balance',          protocol:'code90' },
+    ];
+
+    const ONBOARD_FITNESS = [
+      { id:'sedentary',  emoji:'🛋️', label:'Sedentary',           desc:'Desk-bound, <5k steps' },
+      { id:'light',      emoji:'🚶', label:'Lightly Active',      desc:'Some walking, 5–8k steps' },
+      { id:'moderate',   emoji:'🏃', label:'Moderately Active',   desc:'Workout 3–4×/week' },
+      { id:'very',       emoji:'⚡', label:'Very Active',          desc:'Daily training' },
+    ];
+
+    const ONBOARD_DIETS = [
+      { id:'veg',     emoji:'🥗', label:'Vegetarian' },
+      { id:'nonveg',  emoji:'🍗', label:'Non-Vegetarian' },
+      { id:'vegan',   emoji:'🌱', label:'Vegan' },
+      { id:'egg',     emoji:'🥚', label:'Eggetarian' },
+    ];
+
+    const ONBOARD_GYM = [
+      { id:'gym',     label:'Yes — full gym' },
+      { id:'home',    label:'Home setup' },
+      { id:'none',    label:'No equipment' },
+    ];
+
+    function Onboarding({ onComplete }) {
+      const [step, setStep] = useState(0);
+      const [data, setData] = useState({
+        name:'', age:'', height:'', weight:'', goalWeight:'',
+        goals:[],            // selected goal ids
+        fitness:'',          // fitness level id
+        diet:'',             // diet id
+        restrictions:'',     // free text
+        timePerDay:45,       // minutes
+        gymAccess:'',        // gym/home/none
+      });
+
+      const TOTAL = 6;
+      const update = (k,v) => setData(d => ({ ...d, [k]:v }));
+
+      const canContinue = () => {
+        if (step === 0) return true;
+        if (step === 1) return data.goals.length > 0;
+        if (step === 2) return data.name.trim() && data.age && data.height && data.weight;
+        if (step === 3) return !!data.fitness;
+        if (step === 4) return !!data.diet && !!data.gymAccess;
+        if (step === 5) return true;
+        return false;
+      };
+
+      const next = () => {
+        if (!canContinue()) return;
+        if (step === TOTAL - 1) finish();
+        else setStep(s => s + 1);
+      };
+
+      const back = () => setStep(s => Math.max(0, s - 1));
+
+      const recommendedProtocolId = useMemo(() => {
+        const first = data.goals[0];
+        const found = ONBOARD_GOALS.find(g => g.id === first);
+        return found ? found.protocol : 'code90';
+      }, [data.goals]);
+
+      const finish = () => {
+        const profile = {
+          name:        data.name.trim(),
+          age:         Number(data.age) || 0,
+          height:      Number(data.height) || 0,
+          weight:      Number(data.weight) || 0,
+          goalWeight:  Number(data.goalWeight) || Number(data.weight) || 0,
+          activityLevel: data.fitness,
+          diet:        data.diet,
+          goal:        data.goals[0] || 'wellness',
+          goals:       data.goals,
+          restrictions: data.restrictions.trim(),
+          timePerDay:  data.timePerDay,
+          gymAccess:   data.gymAccess,
+        };
+        S.set('profile', profile);
+        S.set('protocol_active', recommendedProtocolId);
+        S.set('onboarded', true);
+        S.set('startDay', new Date().toISOString());
+        // initial weight history seed
+        if (profile.weight) {
+          S.set('weight', { current: profile.weight, target: profile.goalWeight, start: profile.weight, history:[{ d:new Date().toISOString().slice(0,10), w:profile.weight }] });
+        }
+        onComplete && onComplete();
+      };
+
+      const bg = 'radial-gradient(ellipse 80% 60% at 10% 0%,var(--glow-a),transparent 60%), radial-gradient(ellipse 60% 60% at 90% 110%,var(--glow-b),transparent 60%), var(--bg)';
+
+      return (
+        <div style={{ width:'100%', height:'100dvh', display:'flex', flexDirection:'column', background:bg, color:'var(--text)' }}>
+          {/* Top: progress + back */}
+          <div className="safe-t" style={{ padding:'16px 20px 8px', display:'flex', alignItems:'center', gap:12 }}>
+            {step > 0 ? (
+              <button onClick={back} style={{ background:'transparent', border:'none', color:'var(--text-dim)', cursor:'pointer', display:'flex', alignItems:'center', padding:0 }}>
+                <Icon name="ChevronLeft" size={22}/>
+              </button>
+            ) : <div style={{ width:22 }}/>}
+            <div style={{ flex:1, height:3, borderRadius:999, background:'var(--border-soft)', overflow:'hidden' }}>
+              <div style={{ height:'100%', borderRadius:999, background:'linear-gradient(90deg, var(--gold), var(--gold-deep))', width:`${((step+1)/TOTAL)*100}%`, transition:'width .35s cubic-bezier(.16,1,.3,1)' }}/>
+            </div>
+            <div style={{ fontSize:11, color:'var(--text-faint)', minWidth:28, textAlign:'right' }} className="mono">{step+1}/{TOTAL}</div>
+          </div>
+
+          {/* Body — scrollable */}
+          <div key={step} className="scroll-y no-bar fade-up" style={{ flex:1, padding:'20px 20px 24px' }}>
+            {step === 0 && <OBWelcome/>}
+            {step === 1 && <OBGoals data={data} update={update}/>}
+            {step === 2 && <OBDetails data={data} update={update}/>}
+            {step === 3 && <OBFitness data={data} update={update}/>}
+            {step === 4 && <OBDiet data={data} update={update}/>}
+            {step === 5 && <OBRecommendation data={data} protocolId={recommendedProtocolId}/>}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="safe-b" style={{ padding:'12px 20px 16px' }}>
+            <button
+              onClick={next}
+              disabled={!canContinue()}
+              style={{
+                width:'100%', padding:'16px',
+                borderRadius:14, border:'none', cursor: canContinue()?'pointer':'not-allowed',
+                background: canContinue() ? 'linear-gradient(135deg, var(--gold), var(--gold-deep))' : 'var(--bg-card)',
+                color: canContinue() ? '#1a0f00' : 'var(--text-faint)',
+                fontWeight:600, fontSize:15,
+                fontFamily:'Plus Jakarta Sans,sans-serif',
+                boxShadow: canContinue() ? '0 8px 24px rgba(232,201,122,.18)' : 'none',
+                transition:'all .2s ease',
+              }}
+            >
+              {step === 0 ? 'Begin Setup' : step === TOTAL-1 ? 'Start Your Journey →' : 'Continue'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function OBWelcome() {
+      return (
+        <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', minHeight:'70vh', textAlign:'center', padding:'0 8px' }}>
+          <div className="breathe" style={{ width:96, height:96, borderRadius:'50%', background:'linear-gradient(135deg, var(--gold), var(--gold-deep))', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24, boxShadow:'0 16px 48px rgba(232,201,122,.25)' }}>
+            <span style={{ fontSize:44 }}>🪷</span>
+          </div>
+          <div className="serif" style={{ fontSize:48, lineHeight:1, marginBottom:12, letterSpacing:'-1px' }}>Welcome to SVVA</div>
+          <div style={{ fontSize:17, color:'var(--text-dim)', maxWidth:320, lineHeight:1.5, marginBottom:8 }}>
+            Your Vedic Health System
+          </div>
+          <div style={{ fontSize:13, color:'var(--text-faint)', maxWidth:300, lineHeight:1.6, marginTop:24 }}>
+            A 90-second setup to personalise your protocol — diet, herbs, asanas, training. Designed for the long path.
+          </div>
+        </div>
+      );
+    }
+
+    function OBGoals({ data, update }) {
+      const toggle = (id) => {
+        const cur = data.goals.includes(id);
+        const next = cur ? data.goals.filter(g => g !== id) : [...data.goals, id];
+        update('goals', next);
+      };
+      return (
+        <div>
+          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>What brings you here?</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>Pick one or more. The first you select becomes your primary protocol.</div>
+          <div style={{ display:'grid', gap:10 }}>
+            {ONBOARD_GOALS.map(g => {
+              const selected = data.goals.includes(g.id);
+              const isPrimary = data.goals[0] === g.id;
+              return (
+                <div key={g.id} onClick={() => toggle(g.id)}
+                  style={{
+                    display:'flex', alignItems:'center', gap:14,
+                    padding:'14px 16px', borderRadius:16,
+                    background: selected ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                    border: selected ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                    cursor:'pointer', transition:'all .15s',
+                  }}>
+                  <div style={{ fontSize:24, width:40, height:40, borderRadius:12, background:'var(--bg-card-2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{g.emoji}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'var(--text)', display:'flex', alignItems:'center', gap:8 }}>
+                      {g.label}
+                      {isPrimary && <span style={{ fontSize:9, padding:'2px 7px', borderRadius:999, background:'var(--gold)', color:'#1a0f00', fontWeight:700, letterSpacing:'.5px' }}>PRIMARY</span>}
+                    </div>
+                    <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{g.desc}</div>
+                  </div>
+                  <div style={{
+                    width:22, height:22, borderRadius:'50%',
+                    border: selected ? '2px solid var(--gold)' : '1.5px solid var(--border)',
+                    background: selected ? 'var(--gold)' : 'transparent',
+                    display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
+                  }}>
+                    {selected && <Icon name="Check" size={13} strokeWidth={3} style={{ color:'#1a0f00' }}/>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function OBField({ label, hint, children }) {
+      return (
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.15em', color:'var(--text-faint)', marginBottom:6, fontWeight:500 }}>{label}</div>
+          {children}
+          {hint && <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4 }}>{hint}</div>}
+        </div>
+      );
+    }
+
+    function OBInput({ value, onChange, type='text', placeholder, suffix }) {
+      return (
+        <div style={{ position:'relative' }}>
+          <input
+            type={type}
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder={placeholder}
+            inputMode={type==='number' ? 'decimal' : 'text'}
+            style={{
+              width:'100%',
+              background:'var(--bg-card)',
+              border:'0.5px solid var(--border)',
+              borderRadius:12,
+              padding: suffix ? '13px 48px 13px 14px' : '13px 14px',
+              fontSize:15, color:'var(--text)',
+              fontFamily:'Plus Jakarta Sans,sans-serif',
+              outline:'none',
+            }}
+            onFocus={e => e.target.style.borderColor='var(--gold)'}
+            onBlur={e => e.target.style.borderColor='var(--border)'}
+          />
+          {suffix && <div style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', fontSize:13, color:'var(--text-faint)', pointerEvents:'none' }} className="mono">{suffix}</div>}
+        </div>
+      );
+    }
+
+    function OBDetails({ data, update }) {
+      return (
+        <div>
+          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Tell us about you</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>This personalises your daily targets.</div>
+          <OBField label="Your name">
+            <OBInput value={data.name} onChange={v => update('name', v)} placeholder="Vignesh"/>
+          </OBField>
+          <OBField label="Age">
+            <OBInput value={data.age} onChange={v => update('age', v.replace(/\D/g,''))} type="number" placeholder="28" suffix="yrs"/>
+          </OBField>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            <OBField label="Height">
+              <OBInput value={data.height} onChange={v => update('height', v.replace(/[^0-9.]/g,''))} type="number" placeholder="175" suffix="cm"/>
+            </OBField>
+            <OBField label="Weight">
+              <OBInput value={data.weight} onChange={v => update('weight', v.replace(/[^0-9.]/g,''))} type="number" placeholder="74" suffix="kg"/>
+            </OBField>
+          </div>
+          <OBField label="Target weight" hint="Where you want to be in 90 days">
+            <OBInput value={data.goalWeight} onChange={v => update('goalWeight', v.replace(/[^0-9.]/g,''))} type="number" placeholder="68" suffix="kg"/>
+          </OBField>
+        </div>
+      );
+    }
+
+    function OBFitness({ data, update }) {
+      return (
+        <div>
+          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Your current fitness</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>Be honest — your protocol adapts to where you are now.</div>
+          <div style={{ display:'grid', gap:10 }}>
+            {ONBOARD_FITNESS.map(f => {
+              const selected = data.fitness === f.id;
+              return (
+                <div key={f.id} onClick={() => update('fitness', f.id)}
+                  style={{
+                    display:'flex', alignItems:'center', gap:14,
+                    padding:'16px', borderRadius:16,
+                    background: selected ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                    border: selected ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                    cursor:'pointer', transition:'all .15s',
+                  }}>
+                  <div style={{ fontSize:26 }}>{f.emoji}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:600, color:'var(--text)' }}>{f.label}</div>
+                    <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:2 }}>{f.desc}</div>
+                  </div>
+                  {selected && <Icon name="Check" size={18} strokeWidth={2.5} style={{ color:'var(--gold)' }}/>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function OBDiet({ data, update }) {
+      return (
+        <div>
+          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Diet & schedule</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:24 }}>So we can plan meals you'll actually eat.</div>
+
+          <OBField label="Dietary preference">
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              {ONBOARD_DIETS.map(d => {
+                const sel = data.diet === d.id;
+                return (
+                  <div key={d.id} onClick={() => update('diet', d.id)}
+                    style={{
+                      display:'flex', alignItems:'center', gap:8,
+                      padding:'12px 14px', borderRadius:12,
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      cursor:'pointer', fontSize:14, fontWeight:500,
+                    }}>
+                    <span style={{ fontSize:18 }}>{d.emoji}</span>
+                    <span style={{ color:'var(--text)' }}>{d.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </OBField>
+
+          <OBField label="Health conditions / allergies" hint="Optional — anything we should know">
+            <textarea
+              value={data.restrictions}
+              onChange={e => update('restrictions', e.target.value)}
+              placeholder="e.g. lactose intolerant, gluten allergy, hypertension"
+              rows={2}
+              style={{
+                width:'100%',
+                background:'var(--bg-card)',
+                border:'0.5px solid var(--border)',
+                borderRadius:12,
+                padding:'12px 14px',
+                fontSize:14, color:'var(--text)',
+                fontFamily:'Plus Jakarta Sans,sans-serif',
+                outline:'none', resize:'none',
+              }}
+            />
+          </OBField>
+
+          <OBField label={`Time available per day · ${data.timePerDay} min`}>
+            <input
+              type="range" min={15} max={120} step={5}
+              value={data.timePerDay}
+              onChange={e => update('timePerDay', Number(e.target.value))}
+              className="eg"
+              style={{ marginTop:6 }}
+            />
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-faint)', marginTop:4 }} className="mono">
+              <span>15min</span><span>2hr</span>
+            </div>
+          </OBField>
+
+          <OBField label="Gym access">
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+              {ONBOARD_GYM.map(g => {
+                const sel = data.gymAccess === g.id;
+                return (
+                  <div key={g.id} onClick={() => update('gymAccess', g.id)}
+                    style={{
+                      padding:'10px 8px', borderRadius:10, textAlign:'center',
+                      background: sel ? 'rgba(232,201,122,.10)' : 'var(--bg-card)',
+                      border: sel ? '0.5px solid rgba(232,201,122,.5)' : '0.5px solid var(--border-soft)',
+                      cursor:'pointer', fontSize:12, fontWeight:500, color: sel ? 'var(--gold)' : 'var(--text)',
+                    }}>
+                    {g.label}
+                  </div>
+                );
+              })}
+            </div>
+          </OBField>
+        </div>
+      );
+    }
+
+    function OBRecommendation({ data, protocolId }) {
+      const proto = PROTOCOLS[protocolId] || PROTOCOLS.code90;
+      return (
+        <div>
+          <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'.18em', color:'var(--gold)', marginBottom:8, fontWeight:600 }}>Your recommendation</div>
+          <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginBottom:8 }}>Your protocol is ready</div>
+          <div style={{ fontSize:13, color:'var(--text-dim)', marginBottom:20 }}>Based on your goals and current fitness, this is your starting point.</div>
+
+          <div className="glass" style={{ padding:'24px 20px', marginBottom:18, position:'relative', overflow:'hidden' }}>
+            <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 80% 0%, ${proto.color}22, transparent 60%)`, pointerEvents:'none' }}/>
+            <div style={{ position:'relative' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:14 }}>
+                <div style={{ width:60, height:60, borderRadius:18, background:`${proto.color}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:30, border:`0.5px solid ${proto.color}40` }}>{proto.emoji}</div>
+                <div>
+                  <div className="serif" style={{ fontSize:26, lineHeight:1 }}>{proto.name}</div>
+                  <div style={{ fontSize:12, color:'var(--text-dim)', marginTop:4 }}>{proto.tagline}</div>
+                </div>
+              </div>
+              <div style={{ fontSize:13, color:'var(--text-dim)', lineHeight:1.55, marginBottom:16 }}>{proto.desc}</div>
+              <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                {proto.phases.slice(0,4).map((p,i) => (
+                  <div key={i} style={{ padding:'5px 10px', borderRadius:999, background:'var(--bg-card-2)', fontSize:11, fontWeight:500, color:'var(--text-dim)', border:'0.5px solid var(--border-soft)' }}>
+                    Phase {i+1} · {p.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:8, marginBottom:16 }}>
+            <SummaryCell label="Days" value="90" mono/>
+            <SummaryCell label="Phases" value={String(proto.phases.length)} mono/>
+            <SummaryCell label="Per day" value={`${data.timePerDay}m`} mono/>
+          </div>
+
+          <div style={{ fontSize:11, color:'var(--text-faint)', textAlign:'center', lineHeight:1.6, padding:'0 8px' }}>
+            You can switch protocols any time from Settings. Your data stays on your device.
+          </div>
+        </div>
+      );
+    }
+
+    function SummaryCell({ label, value, mono }) {
+      return (
+        <div style={{ padding:'12px 8px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border-soft)', textAlign:'center' }}>
+          <div className={mono ? 'mono' : ''} style={{ fontSize:22, fontWeight:600, color:'var(--text)', lineHeight:1 }}>{value}</div>
+          <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:6, textTransform:'uppercase', letterSpacing:'.12em' }}>{label}</div>
+        </div>
+      );
+    }
+
     /* ── FULL APP ────────────────────────────────────────────────── */
     function App() {
+      const [onboarded, setOnboarded] = useState(() => !!S.get('onboarded', false));
       const [tab,   setTab]   = useState('home');
       const [theme, setTheme] = useState(() => { const t = S.get('theme','dark'); document.documentElement.setAttribute('data-theme',t); return t; });
       const stepData = useStepCounter();
+
+      if (!onboarded) {
+        return <Onboarding onComplete={() => setOnboarded(true)}/>;
+      }
 
       const changeTab = t => {
         setTab(t);
