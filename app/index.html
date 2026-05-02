@@ -977,6 +977,64 @@
       );
     }
 
+    /* Daily Protocol Strip data — per-protocol timeline (Phase 3, expanded in Phase 6) */
+    const DAILY_STRIPS = {
+      code90: [
+        { time:'5:45',  emoji:'🌅', name:'Agni Water',     hint:'Warm + lemon + ginger', color:'var(--gold)' },
+        { time:'8:00',  emoji:'🍳', name:'Breakfast',      hint:'Eggs + oats + banana',   color:'var(--orange)' },
+        { time:'12:30', emoji:'🍛', name:'Lunch',          hint:'Dal + rice + sabzi',     color:'var(--orange)' },
+        { time:'16:00', emoji:'🌿', name:'Triphala',       hint:'Gut + detox tonic',      color:'var(--green)' },
+        { time:'19:00', emoji:'🥗', name:'Dinner',         hint:'Light, before sundown',  color:'var(--orange)' },
+        { time:'21:30', emoji:'🌙', name:'Turmeric Milk',  hint:'Sleep + recovery',       color:'var(--purple)' },
+      ],
+      codeHair: [
+        { time:'6:00',  emoji:'🥃', name:'Copper Water',   hint:'Soaked overnight',       color:'var(--orange)' },
+        { time:'7:00',  emoji:'💆', name:'Bhringraj Oil',  hint:'15-min scalp massage',   color:'var(--green)' },
+        { time:'8:00',  emoji:'🌱', name:'Amla Juice',     hint:'30ml empty stomach',     color:'var(--green)' },
+        { time:'13:00', emoji:'🍛', name:'Iron Lunch',     hint:'Palak dal + rajma',      color:'var(--red)' },
+        { time:'16:00', emoji:'🥜', name:'Pumpkin Seeds',  hint:'+ walnuts + dates',      color:'var(--orange)' },
+        { time:'21:00', emoji:'🌿', name:'Brahmi Milk',    hint:'Stress reduction',       color:'var(--blue)' },
+      ],
+      codeGlow: [
+        { time:'7:00',  emoji:'🌹', name:'Rose Water',     hint:'+ saffron + cardamom',   color:'var(--red)' },
+        { time:'8:30',  emoji:'🫐', name:'Antioxidant Bowl', hint:'Berries + flax + curd', color:'var(--purple)' },
+        { time:'12:00', emoji:'🥑', name:'Colour Plate',   hint:'5 colours of veg',       color:'var(--green)' },
+        { time:'15:00', emoji:'🥒', name:'Green Juice',    hint:'Cucumber + amla + mint', color:'var(--green)' },
+        { time:'19:00', emoji:'🍲', name:'Light Dinner',   hint:'No heavy carbs',         color:'var(--orange)' },
+        { time:'21:30', emoji:'🌟', name:'Kesar Milk',     hint:'Saffron + turmeric',     color:'var(--gold)' },
+      ],
+      codeYouth: [
+        { time:'5:30',  emoji:'🍵', name:'Brahmi Tea',     hint:'+ tulsi + ashwagandha',  color:'var(--blue)' },
+        { time:'6:00',  emoji:'🫗', name:'Abhyanga',       hint:'Full body oil massage',  color:'var(--gold)' },
+        { time:'8:00',  emoji:'🦴', name:'Collagen Bowl',  hint:'Bone broth + berries',   color:'var(--orange)' },
+        { time:'12:30', emoji:'🌾', name:'Mung + Ghee',    hint:'Turmeric rice + greens', color:'var(--green)' },
+        { time:'19:00', emoji:'🍵', name:'Light Dinner',   hint:'Soup + roti',            color:'var(--blue)' },
+        { time:'21:00', emoji:'🍯', name:'Chyawanprash',   hint:'1 tsp + warm milk',      color:'var(--purple)' },
+      ],
+      codePhysique: [
+        { time:'6:30',  emoji:'☕', name:'Pre-Workout',    hint:'Eggs + banana + coffee', color:'var(--red)' },
+        { time:'9:00',  emoji:'🥤', name:'Post-Workout',   hint:'Whey + rice + fruit',    color:'var(--orange)' },
+        { time:'13:00', emoji:'🍗', name:'Lunch',          hint:'200g protein + carbs',   color:'var(--red)' },
+        { time:'16:00', emoji:'🥄', name:'Snack',          hint:'Yogurt + nuts',          color:'var(--orange)' },
+        { time:'19:30', emoji:'🍽', name:'Dinner',         hint:'Protein + sweet potato', color:'var(--red)' },
+        { time:'22:00', emoji:'🥛', name:'Casein Night',   hint:'Slow protein',           color:'var(--purple)' },
+      ],
+    };
+
+    function getGreeting() {
+      const h = new Date().getHours();
+      if (h < 12) return 'Good morning';
+      if (h < 17) return 'Good afternoon';
+      if (h < 21) return 'Good evening';
+      return 'Good night';
+    }
+
+    function getTodayCaloriesIn() {
+      const k = 'food_' + new Date().toISOString().slice(0,10);
+      const log = S.get(k, []);
+      return log.reduce((s, e) => s + (Number(e.calories) || 0), 0);
+    }
+
     function HomeScreen({ stepData }) {
       const day = S.get('startDay', null);
       const startDay = day ? new Date(day) : new Date();
@@ -986,36 +1044,232 @@
       const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
       const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()];
 
+      const profile = S.get('profile', {});
+      const name = profile.name ? profile.name.split(' ')[0] : '';
+      const activeProtoId = S.get('protocol_active', 'code90');
+      const activeProto = PROTOCOLS[activeProtoId] || PROTOCOLS.code90;
+
       return (
         <div className="scroll-y no-bar fade-up" style={{ height:'100%', paddingBottom:100 }}>
           {/* Header */}
           <div className="safe-t" style={{ padding:'0 20px 0', paddingTop:'max(16px, env(safe-area-inset-top))' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', paddingTop:8 }}>
-              <div>
+              <div style={{ minWidth:0, flex:1 }}>
                 <div style={{ fontSize:12, color:'var(--text-faint)' }}>{dow}, {new Date().getDate()} {mon}</div>
-                <div className="serif" style={{ fontSize:32, lineHeight:1.1, marginTop:4 }}>
-                  Good morning
+                <div className="serif" style={{ fontSize:32, lineHeight:1.15, marginTop:4 }}>
+                  {getGreeting()}{name ? `, ${name}` : ''}
+                </div>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:6 }}>
+                  <span style={{ fontSize:14 }}>{activeProto.emoji}</span>
+                  <span style={{ fontSize:12, color:'var(--text-dim)' }}>{activeProto.name}</span>
                 </div>
               </div>
-              <div style={{ textAlign:'right' }}>
+              <div style={{ textAlign:'right', flexShrink:0 }}>
                 <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.15em', color:'var(--text-faint)' }}>Day</div>
-                <div className="serif" style={{ fontSize:32, lineHeight:1 }}>
-                  {dayNum}<span style={{ color:'var(--text-faint)', fontSize:18 }}>/90</span>
+                <div style={{ display:'flex', alignItems:'baseline', justifyContent:'flex-end' }}>
+                  <span className="mono" style={{ fontSize:36, lineHeight:1, fontWeight:500, color:'var(--text)' }}>{dayNum}</span>
+                  <span className="serif" style={{ fontSize:18, color:'var(--text-faint)' }}>/90</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{ padding:'16px 20px 0' }}>
+          {/* Quick Stats Row — horizontal scroll */}
+          <QuickStatsRow stepData={stepData}/>
+
+          {/* Daily Protocol Strip */}
+          <DailyProtocolStrip protocolId={activeProtoId}/>
+
+          {/* Soma — preserved core feature */}
+          <div style={{ padding:'8px 20px 0' }}>
             <SomaCard/>
-            <SleepCard/>
-            <StepsCard stepData={stepData}/>
-            <WaterCard/>
-            <FastingCard/>
+          </div>
+
+          {/* Below fold — Sleep + Weight in compact grid */}
+          <div style={{ padding:'0 20px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            <SleepMini/>
+            <WeightMini/>
+          </div>
+
+          {/* Glucose card stays for now */}
+          <div style={{ padding:'0 20px' }}>
             <GlucoseCard/>
-            <WeightCard/>
           </div>
         </div>
+      );
+    }
+
+    /* ── PHASE 3: QUICK STATS ROW (horizontal scroll) ───────────── */
+    function QuickStatsRow({ stepData }) {
+      const stepsCount = stepData?.count || S.get('steps', { count:0 }).count || 0;
+      const stepsGoal  = 10000;
+      const calIn      = getTodayCaloriesIn();
+      const calBurnt   = Math.round(stepsCount * 0.04 + (S.get('activeCalories', 0) || 0));
+      const water      = (() => {
+        const w = S.get('water', null);
+        if (!w) return { liters:0, goal:3 };
+        if ('liters' in w) return w;
+        return { liters:(w.glasses||0) * 0.25, goal:3 };
+      })();
+      const fasting    = S.get('fasting', { active:false, start:null });
+      const fastingMs  = fasting.active && fasting.start ? Date.now() - fasting.start : 0;
+      const fastingHours = Math.floor(fastingMs / 3600000);
+      const fastingMins  = Math.floor((fastingMs % 3600000) / 60000);
+
+      const stats = [
+        { key:'steps', icon:'Footprints', color:'var(--orange)', label:'Steps',
+          value: stepsCount.toLocaleString(), sub: `of ${stepsGoal.toLocaleString()}`,
+          progress: Math.min(1, stepsCount / stepsGoal) },
+        { key:'calIn', icon:'Flame', color:'var(--red)', label:'Calories In',
+          value: calIn.toLocaleString(), sub: 'today · food log',
+          progress: null, mono:true },
+        { key:'calOut', icon:'Activity', color:'var(--green)', label:'Calories Burnt',
+          value: calBurnt.toLocaleString(), sub: 'from activity',
+          progress: null, mono:true },
+        { key:'water', icon:'Droplets', color:'var(--blue)', label:'Water',
+          value: `${water.liters.toFixed(1)}L`, sub: `of ${water.goal}L`,
+          progress: Math.min(1, water.liters / water.goal),
+          action: () => {
+            const next = { ...water, liters: Math.round((water.liters + 0.5) * 10) / 10 };
+            if (next.liters > water.goal + 1) next.liters = 0; // tap-cycle reset
+            S.set('water', next);
+            window.location.reload();
+          },
+          actionLabel:'+0.5L' },
+        { key:'fast', icon:'Clock', color:'var(--gold)', label:'Fasting',
+          value: fasting.active ? `${fastingHours}h ${String(fastingMins).padStart(2,'0')}m` : '—',
+          sub: fasting.active ? '16h target' : 'not active',
+          progress: fasting.active ? Math.min(1, fastingMs / (16*3600000)) : null, mono:true },
+      ];
+
+      return (
+        <div style={{ marginTop:18 }}>
+          <div className="scroll-x no-bar" style={{ display:'flex', gap:10, padding:'0 20px 4px' }}>
+            {stats.map(s => (
+              <div key={s.key} style={{
+                flexShrink:0, width:138, minHeight:108,
+                padding:'12px 14px',
+                background:'var(--bg-card)',
+                border:'0.5px solid var(--border-soft)',
+                borderRadius:16,
+                display:'flex', flexDirection:'column', justifyContent:'space-between',
+                position:'relative',
+              }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <Icon name={s.icon} size={16} strokeWidth={1.5} style={{ color:s.color }}/>
+                  {s.action && <button onClick={s.action} style={{ background:'transparent', border:'none', color:s.color, fontSize:10, fontWeight:600, cursor:'pointer', padding:0 }}>{s.actionLabel}</button>}
+                </div>
+                <div>
+                  <div className={s.mono ? 'mono' : ''} style={{ fontSize:22, fontWeight:600, color:s.color, lineHeight:1.1 }}>{s.value}</div>
+                  <div style={{ fontSize:10, color:'var(--text-faint)', marginTop:2 }}>{s.sub}</div>
+                </div>
+                {s.progress !== null && (
+                  <div className="bar-track thin-track" style={{ marginTop:4 }}>
+                    <div className="bar-fill" style={{ width:`${s.progress*100}%`, background:s.color }}/>
+                  </div>
+                )}
+                <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'.12em', color:'var(--text-faint)', fontWeight:500, marginTop:2 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PHASE 3: DAILY PROTOCOL STRIP ──────────────────────────── */
+    function DailyProtocolStrip({ protocolId }) {
+      const items = DAILY_STRIPS[protocolId] || DAILY_STRIPS.code90;
+      const todayKey = 'strip_done_' + new Date().toISOString().slice(0,10);
+      const [done, setDone] = useState(() => S.get(todayKey, []));
+
+      const toggle = (idx) => {
+        const k = `${protocolId}-${idx}`;
+        const next = done.includes(k) ? done.filter(d => d !== k) : [...done, k];
+        setDone(next);
+        S.set(todayKey, next);
+      };
+
+      const completedCount = items.filter((_,i) => done.includes(`${protocolId}-${i}`)).length;
+
+      return (
+        <div style={{ marginTop:18 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 20px 8px' }}>
+            <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--text-faint)', fontWeight:500 }}>Today's Protocol</div>
+            <div style={{ fontSize:11, color:'var(--text-dim)' }} className="mono">{completedCount}/{items.length}</div>
+          </div>
+          <div className="scroll-x no-bar" style={{ display:'flex', gap:10, padding:'0 20px 4px' }}>
+            {items.map((item, i) => {
+              const isDone = done.includes(`${protocolId}-${i}`);
+              return (
+                <div key={i} onClick={() => toggle(i)} style={{
+                  flexShrink:0, width:148, minHeight:128,
+                  padding:'14px',
+                  background: isDone ? 'rgba(74,222,128,.06)' : 'var(--bg-card)',
+                  border: isDone ? '0.5px solid rgba(74,222,128,.35)' : '0.5px solid var(--border-soft)',
+                  borderRadius:16,
+                  display:'flex', flexDirection:'column', justifyContent:'space-between',
+                  cursor:'pointer', transition:'all .2s', position:'relative', overflow:'hidden',
+                }}>
+                  {!isDone && <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 100% 0%, ${item.color}18, transparent 70%)`, pointerEvents:'none' }}/>}
+                  <div style={{ position:'relative', display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+                    <div style={{ fontSize:11, color:'var(--text-faint)' }} className="mono">{item.time}</div>
+                    {isDone ? (
+                      <div style={{ width:18, height:18, borderRadius:999, background:'var(--green)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <Icon name="Check" size={12} strokeWidth={3} style={{ color:'#0a1f12' }}/>
+                      </div>
+                    ) : (
+                      <div style={{ width:18, height:18, borderRadius:999, border:'1.5px solid var(--border)' }}/>
+                    )}
+                  </div>
+                  <div style={{ position:'relative' }}>
+                    <div style={{ fontSize:28, lineHeight:1, marginBottom:6 }}>{item.emoji}</div>
+                    <div className="serif" style={{ fontSize:17, lineHeight:1.15, color: isDone ? 'var(--text-dim)' : 'var(--text)' }}>{item.name}</div>
+                    <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:4, lineHeight:1.4 }}>{item.hint}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── PHASE 3: COMPACT SLEEP + WEIGHT (below fold) ───────────── */
+    function SleepMini() {
+      const sleep = S.get('sleep', { hours:7.5, quality:80 });
+      return (
+        <GlassCard style={{ padding:14, marginTop:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <Icon name="Moon" size={14} strokeWidth={1.5} style={{ color:'var(--purple)' }}/>
+            <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'.12em', color:'var(--text-faint)', fontWeight:500 }}>Sleep</div>
+          </div>
+          <div className="serif" style={{ fontSize:28, lineHeight:1, color:'var(--purple)' }}>
+            {Math.floor(sleep.hours)}h <span style={{ fontSize:18, color:'var(--text-faint)' }}>{Math.round((sleep.hours%1)*60)}m</span>
+          </div>
+          <div style={{ fontSize:11, color:'var(--text-dim)', marginTop:6 }}>Quality {sleep.quality}%</div>
+        </GlassCard>
+      );
+    }
+
+    function WeightMini() {
+      const w = S.get('weight', { current:0, target:0 });
+      const profile = S.get('profile', {});
+      const cur = w.current || profile.weight || 0;
+      const tgt = w.target  || profile.goalWeight || 0;
+      const diff = cur && tgt ? (cur - tgt).toFixed(1) : null;
+      return (
+        <GlassCard style={{ padding:14, marginTop:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <Icon name="Scale" size={14} strokeWidth={1.5} style={{ color:'var(--gold)' }}/>
+            <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'.12em', color:'var(--text-faint)', fontWeight:500 }}>Weight</div>
+          </div>
+          <div className="serif" style={{ fontSize:28, lineHeight:1, color:'var(--gold)' }}>
+            {cur || '—'}<span style={{ fontSize:18, color:'var(--text-faint)' }}>{cur?'kg':''}</span>
+          </div>
+          <div style={{ fontSize:11, color:'var(--text-dim)', marginTop:6 }}>
+            {diff !== null ? `${diff > 0 ? `${diff}kg to go` : 'Goal hit ✓'}` : 'Set in Profile'}
+          </div>
+        </GlassCard>
       );
     }
 
