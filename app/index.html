@@ -184,7 +184,12 @@
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root" style="display:flex; align-items:center; justify-content:center; height:100dvh; background:#0A0A0A; color:#F2F0ED; font-family:-apple-system,system-ui,sans-serif;">
+    <div style="text-align:center;">
+      <h1>SVVA 🪷</h1>
+      <p style="color:#aaa; margin-top:20px;">Loading your health system...</p>
+    </div>
+  </div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
@@ -4018,7 +4023,27 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    try {
+      console.log('🚀 SVVA App Loading...');
+      console.log('React version:', React.version);
+      console.log('Root element:', document.getElementById('root'));
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+      console.log('✅ SVVA App Rendered Successfully!');
+    } catch (err) {
+      console.error('❌ SVVA Render Error:', err);
+      document.getElementById('root').innerHTML = `
+        <div style="padding: 40px; color: #F2F0ED; font-family: -apple-system, system-ui, sans-serif;">
+          <h1 style="color: #F87171;">⚠️ App Error</h1>
+          <p>An error occurred while loading SVVA:</p>
+          <pre style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; overflow: auto;">
+${err.message}
+${err.stack}
+          </pre>
+          <p style="margin-top: 20px; color: #F2F0ED;">Please try clearing your browser cache or refreshing the page.</p>
+        </div>
+      `;
+    }
   </script>
 
   <script>
