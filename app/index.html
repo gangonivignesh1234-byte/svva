@@ -2040,6 +2040,7 @@
       };
 
       const bodyContent = (
+        <>
           <div style={{ padding: embedded ? '0' : '0 20px' }}>
 
             {/* Body fat card */}
@@ -2228,7 +2229,7 @@
           <MeasurementsModal open={showMeasure} onClose={() => setShowMeasure(false)} measurements={measurements} onSave={saveMeasurements}/>
           <ReferenceModal    open={showRef}     onClose={() => setShowRef(false)}     onSave={saveReference}/>
           <ProgressPhotoModal open={!!photoModal} onClose={() => setPhotoModal(null)} category={photoModal} onSave={p => addPhoto(photoModal, p)}/>
-        </div>
+        </>
       );
 
       if (embedded) return bodyContent;
@@ -2517,13 +2518,51 @@
     }
 
     function SettingsTab({ theme, setTheme }) {
-      const exportData = () => {
+      const [showLegal, setShowLegal] = useState(null);
+      const fileInputRef = useRef(null);
+
+      // Download JSON file to user's Downloads folder
+      const downloadBackup = () => {
         try {
           const data = {};
           Object.keys(localStorage).filter(k => k.startsWith('svva_')).forEach(k => { data[k] = localStorage.getItem(k); });
-          const str = JSON.stringify(data, null, 2);
-          navigator.clipboard?.writeText(str).then(() => alert('Data copied to clipboard!'));
-        } catch { alert('Open browser console → copy localStorage manually.'); }
+          const payload = { app:'SVVA', version:'1.0', exported: new Date().toISOString(), data };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `svva-backup-${new Date().toISOString().slice(0,10)}.json`;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) { alert('Backup failed: ' + e.message); }
+      };
+
+      const copyJSON = () => {
+        try {
+          const data = {};
+          Object.keys(localStorage).filter(k => k.startsWith('svva_')).forEach(k => { data[k] = localStorage.getItem(k); });
+          navigator.clipboard?.writeText(JSON.stringify(data, null, 2)).then(() => alert('Data copied to clipboard!'));
+        } catch { alert('Copy failed.'); }
+      };
+
+      // Restore from JSON file
+      const restoreBackup = e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            const data = parsed.data || parsed;
+            if (!confirm('Restore backup? This will overwrite your current data.')) return;
+            Object.entries(data).forEach(([k, v]) => {
+              if (k.startsWith('svva_')) localStorage.setItem(k, v);
+            });
+            alert('Backup restored! Reloading...');
+            window.location.reload();
+          } catch (err) { alert('Invalid backup file: ' + err.message); }
+        };
+        reader.readAsText(file);
       };
 
       return (
@@ -2531,7 +2570,7 @@
           <GlassCard style={{ padding:20, marginBottom:12 }}>
             <div style={{ fontSize:13, fontWeight:500, marginBottom:16 }}>Theme</div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-              {[['dark','🌑 Dark'],['white','☀️ White']].map(([t,label]) => (
+              {[['dark','🌑 Dark'],['white','☀️ Light']].map(([t,label]) => (
                 <button key={t} onClick={() => { setTheme(t); document.documentElement.setAttribute('data-theme', t); S.set('theme', t); }}
                   style={{ padding:'14px', borderRadius:14, cursor:'pointer', fontWeight:600, fontSize:13,
                     background: theme===t ? 'linear-gradient(135deg,var(--gold),var(--gold-deep))' : 'var(--bg-card)',
@@ -2544,26 +2583,52 @@
           </GlassCard>
 
           <GlassCard style={{ padding:20, marginBottom:12 }}>
-            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Data</div>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Privacy</div>
             {[
-              ['✅ Stored locally on your device', 'var(--green)'],
+              ['✅ Stored locally on your device only', 'var(--green)'],
               ['✅ Works offline — no internet needed', 'var(--green)'],
               ['✅ No accounts, no cloud sync', 'var(--green)'],
-              ['📱 Add to Home Screen for app-like use', 'var(--text-dim)'],
+              ['✅ No tracking, no ads, no analytics', 'var(--green)'],
+              ['✅ No email or phone required', 'var(--green)'],
             ].map(([t,c]) => (
               <div key={t} style={{ fontSize:12, color:c, padding:'5px 0', borderBottom:'0.5px solid var(--border-soft)' }}>{t}</div>
             ))}
           </GlassCard>
 
           <GlassCard style={{ padding:20, marginBottom:12 }}>
-            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Backup</div>
-            <button onClick={exportData}
-              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--gold)', fontSize:13, cursor:'pointer', marginBottom:10 }}>
-              📋 Export all data (copy JSON)
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Backup & Restore</div>
+            <button onClick={downloadBackup}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', border:'none', color:'#1a0f00', fontWeight:600, fontSize:13, cursor:'pointer', marginBottom:10 }}>
+              💾 Download Backup (.json file)
             </button>
-            <div style={{ fontSize:11, color:'var(--text-faint)', lineHeight:1.5 }}>
-              Paste in Notes or email for backup. Import: open console → paste to localStorage.
+            <button onClick={() => fileInputRef.current?.click()}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer', marginBottom:10 }}>
+              📂 Restore from Backup file
+            </button>
+            <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={restoreBackup} style={{ display:'none' }}/>
+            <button onClick={copyJSON}
+              style={{ width:'100%', padding:'10px', borderRadius:12, background:'transparent', border:'0.5px dashed var(--border)', color:'var(--text-dim)', fontSize:12, cursor:'pointer', marginBottom:8 }}>
+              📋 Copy JSON to clipboard
+            </button>
+            <div style={{ fontSize:11, color:'var(--text-faint)', lineHeight:1.5, marginTop:8 }}>
+              Save backup to Google Drive, iCloud, or any folder. Restore anytime to migrate to a new device.
             </div>
+          </GlassCard>
+
+          <GlassCard style={{ padding:20, marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:500, marginBottom:12 }}>Legal & Support</div>
+            <button onClick={() => setShowLegal('privacy')}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer', marginBottom:8, textAlign:'left' }}>
+              🔒 Privacy Policy
+            </button>
+            <button onClick={() => setShowLegal('terms')}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer', marginBottom:8, textAlign:'left' }}>
+              📄 Terms of Service
+            </button>
+            <button onClick={() => setShowLegal('about')}
+              style={{ width:'100%', padding:'12px', borderRadius:12, background:'var(--bg-card)', border:'0.5px solid var(--border)', color:'var(--text)', fontSize:13, cursor:'pointer', textAlign:'left' }}>
+              ℹ️ About SVVA
+            </button>
           </GlassCard>
 
           <button onClick={() => { if (confirm('Restart onboarding? Your other data is kept.')) { localStorage.removeItem('svva_onboarded'); window.location.reload(); } }}
@@ -2571,10 +2636,182 @@
             ↺ Restart onboarding
           </button>
 
-          <button onClick={() => { if (confirm('Delete all SVVA data? This cannot be undone.')) { S.clear(); window.location.reload(); } }}
+          <button onClick={() => { if (confirm('Delete all SVVA data? This cannot be undone.\n\nTip: Download a backup first!')) { S.clear(); window.location.reload(); } }}
             style={{ width:'100%', padding:'13px', borderRadius:14, background:'rgba(248,113,113,0.12)', border:'0.5px solid rgba(248,113,113,0.3)', color:'var(--red)', fontWeight:600, fontSize:13, cursor:'pointer' }}>
-            Clear All Data
+            🗑️ Clear All Data
           </button>
+
+          <div style={{ textAlign:'center', marginTop:24, fontSize:11, color:'var(--text-faint)' }}>
+            SVVA v1.0 · Built with 🪷 for the long path
+          </div>
+
+          {showLegal && <LegalModal type={showLegal} onClose={() => setShowLegal(null)}/>}
+        </div>
+      );
+    }
+
+    function LegalModal({ type, onClose }) {
+      const content = {
+        privacy: {
+          title: 'Privacy Policy',
+          updated: '2026-05-08',
+          body: `SVVA is a privacy-first wellness application. This Privacy Policy explains how your data is handled.
+
+1. WHAT WE COLLECT
+We collect ONLY the data you voluntarily enter into the app:
+- Profile info (name, age, height, weight, goals)
+- Health metrics (sleep, steps, water, weight)
+- Food entries you log
+- Workout sessions you record
+- Progress photos you take
+
+2. WHERE YOUR DATA IS STORED
+ALL your data is stored LOCALLY on your device using browser localStorage. Your data NEVER leaves your device. We do not have any servers that hold your personal data.
+
+3. NO TRACKING
+We do not use:
+- Google Analytics
+- Facebook Pixel
+- Any third-party tracking
+- Cookies for tracking
+- Advertising networks
+
+4. THIRD-PARTY SERVICES
+The app loads these resources from public CDNs:
+- Google Fonts (font files only)
+- React, Tailwind CSS, Lucide Icons (libraries only)
+These services may log basic request metadata (IP address) per their own policies.
+
+5. OPTIONAL HEALTH INTEGRATIONS
+Apple Health (iOS) and Google Fit (Android) integrations are OPTIONAL. You must explicitly grant permission. Data flows ONE-WAY: from health app → SVVA only.
+
+6. CHILDREN
+This app is not intended for children under 13. Do not use if under 13.
+
+7. YOUR RIGHTS
+- Access: View all data in Settings
+- Export: Download your data anytime
+- Delete: Clear all data anytime
+- No data sale: We never sell your data (we don't have it)
+
+8. CONTACT
+For questions about privacy, open an issue at:
+github.com/gangonivignesh1234-byte/svva
+
+By using SVVA, you agree to this Privacy Policy.`
+        },
+        terms: {
+          title: 'Terms of Service',
+          updated: '2026-05-08',
+          body: `Welcome to SVVA. By using this app you agree to these Terms.
+
+1. NOT MEDICAL ADVICE
+SVVA provides general wellness information based on traditional Vedic and modern fitness practices. It is NOT a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before:
+- Starting any diet or fitness program
+- Beginning fasting protocols
+- Taking herbal recommendations
+- If you have any medical condition
+
+2. USER RESPONSIBILITY
+You are responsible for:
+- Accuracy of data you enter
+- Backing up your data (use the Backup feature)
+- Your health decisions and outcomes
+- Consulting professionals when needed
+
+3. NO GUARANTEES
+Results vary by individual. We make no guarantees about:
+- Specific health outcomes
+- Weight loss or gain
+- Fitness improvements
+- Disease prevention or treatment
+
+4. DATA LOSS
+Since data is stored locally, you may lose data if:
+- You clear browser data
+- You uninstall the browser
+- Your device is reset
+ALWAYS keep regular backups using the Backup feature.
+
+5. PROHIBITED USE
+Do not:
+- Use the app while operating heavy machinery
+- Rely solely on the app for medical decisions
+- Use during medical emergencies (call emergency services)
+
+6. INTELLECTUAL PROPERTY
+The SVVA app, design, and content are owned by the developer. The app source code is publicly available.
+
+7. CHANGES
+We may update these Terms. Continued use means acceptance.
+
+8. LIMITATION OF LIABILITY
+To the maximum extent permitted by law, SVVA and its developers are not liable for any damages arising from app use.
+
+By using SVVA, you accept these Terms.`
+        },
+        about: {
+          title: 'About SVVA',
+          updated: '2026-05-08',
+          body: `🪷 SVVA — Your Vedic Health System
+
+SVVA combines ancient Ayurvedic wisdom with modern science tracking. Built for those who want a holistic approach to wellness — body, mind, and spirit.
+
+FEATURES
+✅ 5 Vedic Protocols (Code 90, Physique, Hair, Glow, Youth)
+✅ Soma Engine — daily personalized recovery
+✅ 10-step health audit with Prakriti detection
+✅ Gym tracker with Mon-Sat split
+✅ Food log with 35 Indian foods + minerals
+✅ Sleep, water, fasting, weight tracking
+✅ Asanas, pranayama, herbal drinks
+✅ 100% offline — works without internet
+✅ Dark + Light mode
+
+PHILOSOPHY
+We believe wellness data is YOUR data. That's why everything stays on YOUR device:
+- No accounts to create
+- No cloud servers
+- No data harvesting
+- No surveillance
+
+BUILT WITH
+- React 18
+- Tailwind CSS
+- Lucide Icons
+- Plus Jakarta Sans
+- Vedic principles
+- Modern science
+
+VERSION
+v1.0 · 2026
+
+CONTRIBUTE
+github.com/gangonivignesh1234-byte/svva
+
+Built with 🪷 for the long path.`
+        }
+      }[type];
+
+      return (
+        <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:'var(--bg)', border:'0.5px solid var(--border)', borderRadius:'var(--radius-lg)', maxWidth:600, width:'100%', maxHeight:'85dvh', overflow:'hidden', display:'flex', flexDirection:'column' }}>
+            <div style={{ padding:20, borderBottom:'0.5px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div>
+                <div className="serif" style={{ fontSize:22 }}>{content.title}</div>
+                <div style={{ fontSize:11, color:'var(--text-faint)', marginTop:2 }}>Last updated: {content.updated}</div>
+              </div>
+              <button onClick={onClose} style={{ background:'transparent', border:'none', color:'var(--text-dim)', fontSize:24, cursor:'pointer', padding:8 }}>×</button>
+            </div>
+            <div style={{ padding:20, overflow:'auto', flex:1, fontSize:13, color:'var(--text-dim)', lineHeight:1.7, whiteSpace:'pre-wrap' }}>
+              {content.body}
+            </div>
+            <div style={{ padding:16, borderTop:'0.5px solid var(--border)' }}>
+              <button onClick={onClose} style={{ width:'100%', padding:'12px', borderRadius:12, background:'linear-gradient(135deg,var(--gold),var(--gold-deep))', border:'none', color:'#1a0f00', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
@@ -3982,7 +4219,49 @@
     }
 
     /* ── FULL APP ────────────────────────────────────────────────── */
+    function StorageConsent({ onAccept }) {
+      return (
+        <div style={{ position:'fixed', inset:0, background:'#0A0A0A', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+          <div style={{ maxWidth:480, width:'100%', textAlign:'center' }}>
+            <div style={{ fontSize:60, marginBottom:20 }}>🪷</div>
+            <div className="serif" style={{ fontSize:32, color:'#F2F0ED', marginBottom:8 }}>Welcome to SVVA</div>
+            <div style={{ fontSize:14, color:'rgba(242,240,237,0.6)', marginBottom:32, lineHeight:1.6 }}>
+              Your Vedic Health System. Privacy-first wellness tracking.
+            </div>
+
+            <div style={{ background:'rgba(255,255,255,0.04)', border:'0.5px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, marginBottom:24, textAlign:'left' }}>
+              <div style={{ fontSize:13, fontWeight:600, color:'#F2F0ED', marginBottom:12 }}>📍 Local Storage Only</div>
+              <div style={{ fontSize:12, color:'rgba(242,240,237,0.7)', lineHeight:1.7 }}>
+                SVVA stores ALL your data on YOUR device using your browser's local storage. We do not:
+                <br/>• Use cookies for tracking
+                <br/>• Send your data to any server
+                <br/>• Collect personal information
+                <br/>• Use analytics or ads
+                <br/>• Share data with third parties
+              </div>
+            </div>
+
+            <div style={{ background:'rgba(232,201,122,0.08)', border:'0.5px solid rgba(232,201,122,0.2)', borderRadius:16, padding:16, marginBottom:24, textAlign:'left' }}>
+              <div style={{ fontSize:12, color:'#E8C97A', lineHeight:1.6 }}>
+                ⚠️ <strong>Important:</strong> SVVA is for wellness tracking only. It is NOT medical advice. Always consult a qualified healthcare provider for medical decisions.
+              </div>
+            </div>
+
+            <button onClick={onAccept}
+              style={{ width:'100%', padding:'16px', borderRadius:14, background:'linear-gradient(135deg,#E8C97A,#B8932A)', border:'none', color:'#1a0f00', fontWeight:600, fontSize:15, cursor:'pointer', marginBottom:12 }}>
+              I Understand & Agree to Continue
+            </button>
+
+            <div style={{ fontSize:11, color:'rgba(242,240,237,0.4)', lineHeight:1.5 }}>
+              By continuing, you agree to our Privacy Policy and Terms of Service. You can review these anytime in Settings.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function App() {
+      const [consented, setConsented] = useState(() => !!S.get('consent_v1', false));
       const [onboarded, setOnboarded] = useState(() => !!S.get('onboarded', false));
       const [tab,   setTab]   = useState('home');
       const [theme, setTheme] = useState(() => { const t = S.get('theme','dark'); document.documentElement.setAttribute('data-theme',t); return t; });
@@ -3995,6 +4274,10 @@
         window.addEventListener('popstate', handler);
         return () => window.removeEventListener('popstate', handler);
       }, []);
+
+      if (!consented) {
+        return <StorageConsent onAccept={() => { S.set('consent_v1', { accepted: new Date().toISOString() }); setConsented(true); }}/>;
+      }
 
       if (!onboarded) {
         return <Onboarding onComplete={() => setOnboarded(true)}/>;

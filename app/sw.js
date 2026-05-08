@@ -1,4 +1,4 @@
-const CACHE = 'svva-v4';
+const CACHE = 'svva-v5';
 const CORE  = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
